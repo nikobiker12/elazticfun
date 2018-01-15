@@ -1,0 +1,13 @@
+{
+  "bindings": [
+    {
+      "type": "serviceBusTrigger",
+      "name": "pathOption",
+      "connection": "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS",
+      "queueName": "path-generation",
+      "accessRights": "Manage",
+      "direction": "in"
+    }
+  ],
+  "disabled": false
+}

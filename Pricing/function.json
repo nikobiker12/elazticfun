@@ -1,5 +1,4 @@
 {
-  "disabled": false,
   "bindings": [
     {
       "authLevel": "function",
@@ -11,6 +10,14 @@
       "name": "$return",
       "type": "http",
       "direction": "out"
+    },
+    {
+      "type": "queue",
+      "name": "pricingRequests",
+      "queueName": "pricing-requests",
+      "connection": "AzureWebJobsStorage",
+      "direction": "out"
     }
-  ]
+  ],
+  "disabled": false
 }

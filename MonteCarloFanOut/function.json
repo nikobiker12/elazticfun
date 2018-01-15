@@ -1,0 +1,12 @@
+{
+  "bindings": [
+    {
+      "name": "pricingRequest",
+      "type": "queueTrigger",
+      "direction": "in",
+      "queueName": "pricing-requests",
+      "connection": "AzureWebJobsStorage"
+    }
+  ],
+  "disabled": false
+}
