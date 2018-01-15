@@ -4,7 +4,7 @@
       "name": "pathGenerationBatch",
       "type": "serviceBusTrigger",
       "direction": "in",
-      "queueName": "path-generation-batch",
+      "queueName": "path-generation",
       "connection": "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS",
       "accessRights": "Manage"
     }

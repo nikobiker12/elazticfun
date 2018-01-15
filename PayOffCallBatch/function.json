@@ -1,0 +1,12 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "name": "pathBatch",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "queueName": "path-payoff",
+      "connection": "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS"
+    }
+  ]
+}

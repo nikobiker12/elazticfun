@@ -1,4 +1,7 @@
+#r "System.Runtime.Serialization"
+
 using System.Net;
+using System.Runtime.Serialization;
 
 public static async Task<HttpResponseMessage> Run(
     HttpRequestMessage req,

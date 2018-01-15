@@ -14,21 +14,23 @@ public static async Task Run(PathGeneration pathGenerationBatch, TraceWriter log
     log.Info($"C# ServiceBus queue trigger function processed message: " + pathGenerationBatch.Pricing.Id
         + ", " + pathGenerationBatch.SimulationId);
 
-    int batchSize = Math.Min(1000,pathGenerationBatch.Pricing.SimulationCount-1000*pathGenerationBatch.SimulationId);
-    var paths = Enumerable.Range(1000*pathGenerationBatch.SimulationId, batchSize)
-        .Select(i => new PathGeneration {
+    int batchSize = Math.Min(1000, pathGenerationBatch.Pricing.SimulationCount - 1000 * pathGenerationBatch.SimulationId);
+    var paths = Enumerable.Range(1000 * pathGenerationBatch.SimulationId, batchSize)
+        .Select(i => new PathGeneration
+        {
             Pricing = pathGenerationBatch.Pricing,
-            SimulationId = i})
+            SimulationId = i
+        })
         .Select(p => GeneratePath(p, log));
 
     log.Info($"Sending path batch to ServiceBus: " + pathGenerationBatch.Pricing.Id);
- 
-    await SendMessagesAsync(batch);
+
+    await SendMessagesAsync(paths, pathGenerationBatch.Pricing);
 }
 
 public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParameters pricingParameters)
 {
-    var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS")+";EntityPath=path-generation";
+    var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS") + ";EntityPath=path-payoff";
     QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
 
     var chunks = paths.ChunkBy(x => 512, MaxServiceBusMessage);
@@ -47,13 +49,13 @@ public static Path GeneratePath(PathGeneration pathGeneration, TraceWriter log)
         pathGeneration.Pricing.Maturity);
 
 
-    const double dt = 1.0/12;
-    var list = Enumerable.Range(1,1000)
-        .Select(i => i*dt)
-        .TakeWhile(t => t<pathGeneration.Pricing.Maturity+dt)
-        .Aggregate(new List<MarketState>() {new MarketState{T=0,S=pathGeneration.Pricing.Spot}}, pathGenerator.Aggregator);
-    
-    return new Path {SimulationId =  pathGeneration.SimulationId, States = list};
+    const double dt = 1.0 / 12;
+    var list = Enumerable.Range(1, 1000)
+        .Select(i => i * dt)
+        .TakeWhile(t => t < pathGeneration.Pricing.Maturity + dt)
+        .Aggregate(new List<MarketState>() { new MarketState { T = 0, S = pathGeneration.Pricing.Spot } }, pathGenerator.Aggregator);
+
+    return new Path { SimulationId = pathGeneration.SimulationId, States = list };
 }
 
 public class PathGenerator
@@ -71,24 +73,24 @@ public class PathGenerator
 
     public List<MarketState> Aggregator(List<MarketState> states, double t)
     {
-        states.Add(Next(states[states.Count - 1], t))
+        states.Add(Next(states[states.Count - 1], t));
         return states;
     }
 
     public MarketState Next(MarketState inState, double t)
     {
         MarketState outState = new MarketState();
-        outState.T = Math.Min(t,_maturity);
+        outState.T = Math.Min(t, _maturity);
         double dt = outState.T - inState.T;
-        double dLogS = -.5*_volatility*_volatility*dt + _volatility*NextGaussian(dt);
+        double dLogS = -.5 * _volatility * _volatility * dt + _volatility * NextGaussian(dt);
         outState.S = inState.S * Math.Exp(dLogS);
         return outState;
     }
 
     double NextGaussian(double dt)
     {
-        double u1 = 1.0-_random.NextDouble(); //uniform(0,1] random doubles
-        double u2 = 1.0-_random.NextDouble();
+        double u1 = 1.0 - _random.NextDouble(); //uniform(0,1] random doubles
+        double u2 = 1.0 - _random.NextDouble();
         double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
              Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
         double randNormal = Math.Sqrt(dt) * randStdNormal; //random normal(0,dt^2)
@@ -98,66 +100,68 @@ public class PathGenerator
 
 public class MarketState
 {
-    public double T {get; set;}
-    public double S {get; set;}
+    public double T { get; set; }
+    public double S { get; set; }
 }
 
 [DataContract]
-public class PricingParameters {
+public class PricingParameters
+{
     [DataMember]
-    public string Id {get; set;}
+    public string Id { get; set; }
     [DataMember]
-    public double Strike {get; set;}
+    public double Strike { get; set; }
     [DataMember]
-    public double Maturity {get; set;}
+    public double Maturity { get; set; }
     [DataMember]
-    public double Spot {get; set;}
+    public double Spot { get; set; }
     [DataMember]
-    public double Volatility{get; set;}
+    public double Volatility { get; set; }
     [DataMember]
-    public int SimulationCount{get; set;}
+    public int SimulationCount { get; set; }
 }
 
 [DataContract]
-public class PathGeneration {
+public class PathGeneration
+{
     [DataMember]
-    public PricingParameters Pricing {get; set;}
+    public PricingParameters Pricing { get; set; }
     [DataMember]
-    public int SimulationId {get; set;}
+    public int SimulationId { get; set; }
 }
 
 [DataContract]
 public class PathAndOption
 {
     [DataMember]
-    public string PricingId {get; set;}
+    public string PricingId { get; set; }
     [DataMember]
-    public int SimulationId {get; set;}
+    public int SimulationId { get; set; }
     [DataMember]
-    public int SimulationCount {get; set;}
+    public int SimulationCount { get; set; }
     [DataMember]
-    public double Spot {get; set;}
+    public double Spot { get; set; }
     [DataMember]
-    public double Strike {get; set;}
+    public double Strike { get; set; }
 }
 
 [DataContract]
 public class Path
 {
     [DataMember]
-    public int SimulationId {get; set;}
+    public int SimulationId { get; set; }
     [DataMember]
-    public List<MarketState> {get; set;}
+    public List<MarketState> States { get; set; }
 }
 
 [DataContract]
 public class PathBatch
 {
     [DataMember]
-    public List<Path> Paths {get;set;}
-    
+    public List<Path> Paths { get; set; }
+
     [DataMember]
-    public PricingParameters PricingParameters {get;set;}
+    public PricingParameters PricingParameters { get; set; }
 }
 
 public static List<List<T>> ChunkBy<T>(this IEnumerable<T> source, Func<T, long> metric, long maxChunkSize)
@@ -167,7 +171,7 @@ public static List<List<T>> ChunkBy<T>(this IEnumerable<T> source, Func<T, long>
             new
             {
                 Sum = 0L,
-                Current = (List<T>)null,
+                Current = (List<T>) null,
                 Result = new List<List<T>>()
             },
             (agg, item) =>

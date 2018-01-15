@@ -13,7 +13,7 @@ public static async Task Run(
 {
     log.Info($"MonteCarloFanOut function start: " + pricingRequest);
 
-    var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS")+";EntityPath=path-generation-batch";
+    var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS")+";EntityPath=path-generation";
     QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
 
     var paths = Enumerable.Range(0,(pricingRequest.SimulationCount+999)/1000)

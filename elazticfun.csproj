@@ -32,12 +32,6 @@
     <None Update="PathGenerationBatch/run.csx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="PayoffCall/function.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="PayoffCall/run.csx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Pricing/function.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -12,8 +12,8 @@
       "direction": "out"
     },
     {
-      "type": "queue",
       "name": "pricingRequests",
+      "type": "queue",
       "queueName": "pricing-requests",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
