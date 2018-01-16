@@ -29,4 +29,4 @@ public static List<List<T>> ChunkBy<T>(this IEnumerable<T> source, Func<T, long>
         .Result;
 }
 
-private const long MaxServiceBusMessage = 256000;
+private const long MaxServiceBusMessage = 262144;

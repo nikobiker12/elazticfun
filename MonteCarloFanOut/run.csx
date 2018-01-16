@@ -17,7 +17,7 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
     var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS")+";EntityPath=path-generation";
     QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
 
-    int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SimulationBathSize"));
+    int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SimulationBatchSize"));
     var batchCount = (pricingRequest.SimulationCount + batchSize - 1) / batchSize;
 
     var paths = Enumerable.Range(0, batchCount)
@@ -29,7 +29,7 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
         })
         .Select(p => new BrokeredMessage(p));
 
-    var chunks = paths.ChunkBy(x => 500, MaxServiceBusMessage);
+    var chunks = paths.ChunkBy(x => 300, MaxServiceBusMessage);
     foreach (var chunk in chunks)
     {
         await queueClient.SendBatchAsync(chunk);

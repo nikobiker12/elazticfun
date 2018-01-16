@@ -44,9 +44,10 @@ public static async Task<HttpResponseMessage> Run(
         Maturity = maturity.GetValueOrDefault(),
         Spot = spot.GetValueOrDefault(),
         Volatility = volatility.GetValueOrDefault(),
-        SimulationCount = simulationCount.GetValueOrDefault() };
+        SimulationCount = simulationCount.GetValueOrDefault()
+    };
 
     await pricingRequests.AddAsync(pricingParameters);
 
-    return req.CreateResponse(HttpStatusCode.OK, "Instrument Id: " + pricingParameters.Id);
+    return req.CreateResponse(HttpStatusCode.OK, "Request Id: " + pricingParameters.Id);
 }

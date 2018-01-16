@@ -9,13 +9,13 @@ using System.Runtime.Serialization;
 
 public static void Run(PathBatch pathBatch, TraceWriter log)
 {
-    log.Info($"C# Queue trigger function processed: {pathBatch}");
+    log.Info($"C# Queue trigger function processed : {pathBatch.Paths.Count}");
 
     var price = pathBatch.Paths.Select(p => VanillaCallPayoff(p.States, pathBatch.PricingParameters))
         .Sum();
 
     // Write sum and count in azure table
-
+ 
 }
 
 public static double VanillaCallPayoff(List<MarketState> states, PricingParameters pricingParameters)

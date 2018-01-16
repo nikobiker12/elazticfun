@@ -15,27 +15,36 @@ using System.Collections.Generic;
 public static async Task Run(SimulationRequest simulationRequest, TraceWriter log)
 {
     log.Info($"C# ServiceBus queue trigger function processed message: " + simulationRequest.Pricing.Id
-        + ", " + simulationRequest.SimulationId);
+        + ", " + simulationRequest.SimulationId + " for " + simulationRequest.PathsCount + " paths");
 
     var paths = Enumerable.Range(1000 * simulationRequest.SimulationId, simulationRequest.PathsCount)
         .Select(p => GeneratePath(p, simulationRequest.Pricing, log));
 
     log.Info($"Sending path batch to ServiceBus: " + simulationRequest.Pricing.Id);
 
-    await SendMessagesAsync(paths, simulationRequest.Pricing);
+    await SendMessagesAsync(paths, simulationRequest.Pricing, log);
 }
 
-public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParameters pricingParameters)
+public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParameters pricingParameters, TraceWriter log)
 {
     var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS") + ";EntityPath=path-payoff";
     QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
 
-    var chunks = paths.ChunkBy(x => 512, MaxServiceBusMessage);
+    log.Info($"Chunk paths batch to max size {MaxServiceBusMessage}");
+//    var dcs = new DataContractSerializer(typeof(PathBatch));        
+    
+    var chunks = paths.ChunkBy(x => new BrokeredMessage(x).Size, MaxServiceBusMessage);
     var messages = chunks.Select(chunk => new PathBatch { PricingParameters = pricingParameters, Paths = chunk })
-        .Select(batch => new BrokeredMessage(batch))
         .ToList();
+        
+    foreach(var mess in messages.Where(m => m != null && m.Paths != null))
+    {
+        log.Info($"Sending path batch to ServiceBus (count = {mess.Paths.Count}, size = {new BrokeredMessage(mess).Size})");
+        queueClient.Send(new BrokeredMessage(mess));
+    }
 
-    await queueClient.SendBatchAsync(messages);
+
+
 }
 
 public static Path GeneratePath(int pathId, PricingParameters pricing, TraceWriter log)
@@ -48,7 +57,7 @@ public static Path GeneratePath(int pathId, PricingParameters pricing, TraceWrit
         .TakeWhile(t => t < pricing.Maturity + dt)
         .Aggregate(new List<MarketState>() { new MarketState { T = 0, S = pricing.Spot } }, pathGenerator.Aggregator);
 
-    return new Path { SimulationId = pathId, States = list };
+    return new Path { SimulationId = pathId, States = list.ToList()  };
 }
 
 public class PathGenerator

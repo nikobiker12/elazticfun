@@ -1,1 +1,1 @@
-{"serviceBus":{"prefetchCount":100}}
+{"serviceBus":{"prefetchCount":100},"swagger":{"enabled":true}}

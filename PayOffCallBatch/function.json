@@ -6,7 +6,8 @@
       "type": "serviceBusTrigger",
       "direction": "in",
       "queueName": "path-payoff",
-      "connection": "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS"
+      "connection": "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS",
+      "accessRights": "Manage" 
     }
   ]
 }

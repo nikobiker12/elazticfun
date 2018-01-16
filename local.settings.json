@@ -3,11 +3,19 @@
   "Values": {
     "WEBSITE_SLOT_NAME": "Production",
     "FUNCTIONS_EXTENSION_VERSION": "~1",
-    "ScmType": "None",
+    "ScmType": "GitHub",
     "WEBSITE_AUTH_ENABLED": "False",
+    "REMOTEDEBUGGINGVERSION": "15.0.26730.8",
     "APPINSIGHTS_INSTRUMENTATIONKEY": "240d1d77-0d9c-48eb-afc4-d5a78f6d4946",
     "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS": "Endpoint=sb://elazticfun.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=XRNn15dMpkidllvxF5Qhl0r/4zMr20eYxlEfVHqA8Wk=",
-    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==;EndpointSuffix=core.windows.net",
-    "SimulationBathSize": 10000
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==",
+    "SimulationBatchSize": "1000",
+    "AzureWebJobsDashboard": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==",
+    "WEBSITE_NODE_DEFAULT_VERSION": "6.5.0",
+    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==",
+    "WEBSITE_CONTENTSHARE": "elazticfun9bbb",
+    "WEBSITE_AUTH_AUTO_AAD": "False",
+    "WEBSITE_SITE_NAME": "ElazticFun",
+    "WEBSITE_AUTH_LOGOUT_PATH": "/.auth/logout"
   }
 }
