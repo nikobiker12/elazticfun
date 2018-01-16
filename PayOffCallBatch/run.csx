@@ -7,15 +7,23 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-public static void Run(PathBatch pathBatch, TraceWriter log)
+public static async Task Run(PathBatch pathBatch, IAsyncCollector<PricingResult> outputTable, TraceWriter log)
 {
-    log.Info($"C# Queue trigger function processed : {pathBatch.Paths.Count}");
+    log.Info($"Queue trigger function for batch {pathBatch.PathBatchId} with {pathBatch.Paths.Count} paths");
 
     var price = pathBatch.Paths.Select(p => VanillaCallPayoff(p.States, pathBatch.PricingParameters))
         .Sum();
 
-    // Write sum and count in azure table
- 
+    var result = new PricingResult
+    {
+        PartitionKey = pathBatch.PricingParameters.Id,
+        RowKey = pathBatch.PathBatchId.ToString(),
+        PriceSum = price,
+        PathsCount = pathBatch.Paths.Count,
+        TotalPathsCount = pathBatch.PricingParameters.SimulationCount,
+    };
+
+    await outputTable.AddAsync(result);
 }
 
 public static double VanillaCallPayoff(List<MarketState> states, PricingParameters pricingParameters)

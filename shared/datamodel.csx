@@ -37,7 +37,7 @@ public class MarketState
 public class Path
 {
     [DataMember]
-    public int SimulationId { get; set; }
+    public int PathId { get; set; }
     [DataMember]
     public List<MarketState> States { get; set; }
 }
@@ -45,6 +45,9 @@ public class Path
 [DataContract]
 public class PathBatch
 {
+    [DataMember]
+    public int PathBatchId { get; set; }
+
     [DataMember]
     public List<Path> Paths { get; set; }
 
@@ -62,6 +65,16 @@ public class SimulationRequest
     public int SimulationId { get; set; }
     [DataMember]
     public int PathsCount { get; set; }
+}
+
+
+public class PricingResult
+{
+    public string PartitionKey { get; set; }
+    public string RowKey { get; set; }
+    public double PriceSum { get; set; }
+    public int PathsCount { get; set; }
+    public int TotalPathsCount { get; set; }
 }
 
 

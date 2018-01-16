@@ -18,14 +18,14 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
         + ", " + simulationRequest.SimulationId + " for " + simulationRequest.PathsCount + " paths");
 
     var paths = Enumerable.Range(simulationRequest.PathsCount * simulationRequest.SimulationId, simulationRequest.PathsCount)
-        .Select(p => GeneratePath(p, simulationRequest.Pricing, log));
+        .Select(pathId => GeneratePath(pathId, simulationRequest.Pricing, log));
 
     log.Info($"Sending path batch to ServiceBus: " + simulationRequest.Pricing.Id);
 
-    await SendMessagesAsync(paths, simulationRequest.Pricing, log);
+    await SendMessagesAsync(simulationRequest.SimulationId, paths, simulationRequest.Pricing, log);
 }
 
-public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParameters pricingParameters, TraceWriter log)
+public static async Task SendMessagesAsync(int pathBatchId, IEnumerable<Path> paths, PricingParameters pricingParameters, TraceWriter log)
 {
     var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS") + ";EntityPath=path-payoff";
     QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
@@ -33,7 +33,7 @@ public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParam
     log.Info($"Chunk paths batch to max size {MaxServiceBusMessage}");
 
     var chunks = paths.ChunkBy(x => new BrokeredMessage(x).Size, MaxServiceBusMessage);
-    var messages = chunks.Select(chunk => new PathBatch { PricingParameters = pricingParameters, Paths = chunk })
+    var messages = chunks.Select(chunk => new PathBatch { PathBatchId = pathBatchId, PricingParameters = pricingParameters, Paths = chunk })
         .ToList();
 
     foreach(var mess in messages.Where(m => m != null && m.Paths != null))
@@ -53,7 +53,7 @@ public static Path GeneratePath(int pathId, PricingParameters pricing, TraceWrit
         .TakeWhile(t => t < pricing.Maturity + dt)
         .Aggregate(new List<MarketState>() { new MarketState { T = 0, S = pricing.Spot } }, pathGenerator.Aggregator);
 
-    return new Path { SimulationId = pathId, States = list.ToList()  };
+    return new Path { PathId = pathId, States = list.ToList()  };
 }
 
 public class PathGenerator

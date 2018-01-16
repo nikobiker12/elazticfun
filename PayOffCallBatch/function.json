@@ -7,7 +7,14 @@
       "direction": "in",
       "queueName": "path-payoff",
       "connection": "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS",
-      "accessRights": "Manage" 
+      "accessRights": "Manage"
+    },
+    {
+      "name": "outputTable",
+      "type": "table",
+      "direction": "out",
+      "tableName": "PricingResult",
+      "connection": "AzureWebJobsStorage"
     }
   ]
 }
