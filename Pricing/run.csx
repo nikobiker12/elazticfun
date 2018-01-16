@@ -1,7 +1,6 @@
-#r "System.Runtime.Serialization"
+#load "..\shared\datamodel.csx"
 
 using System.Net;
-using System.Runtime.Serialization;
 
 public static async Task<HttpResponseMessage> Run(
     HttpRequestMessage req,
@@ -13,7 +12,10 @@ public static async Task<HttpResponseMessage> Run(
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
 
-    // Set name to query string or body data
+    string payoffName = data?.payoffName;
+    if (String.IsNullOrEmpty(payoffName))
+        return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass payoffName in the request body");
+
     double? strike = data?.strike;
     if (strike == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass strike in the request body");
@@ -34,8 +36,10 @@ public static async Task<HttpResponseMessage> Run(
     if (simulationCount == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass simulationCount in the request body");
 
-    PricingParameters pricingParameters = new PricingParameters{
+    PricingParameters pricingParameters = new PricingParameters
+    {
         Id = Guid.NewGuid().ToString(),
+        PayoffName = payoffName,
         Strike = strike.GetValueOrDefault(),
         Maturity = maturity.GetValueOrDefault(),
         Spot = spot.GetValueOrDefault(),
@@ -45,13 +49,4 @@ public static async Task<HttpResponseMessage> Run(
     await pricingRequests.AddAsync(pricingParameters);
 
     return req.CreateResponse(HttpStatusCode.OK, "Instrument Id: " + pricingParameters.Id);
-}
-
-public class PricingParameters {
-    public string Id {get; set;}
-    public double Strike {get; set;}
-    public double Maturity {get; set;}
-    public double Spot {get; set;}
-    public double Volatility{get; set;}
-    public int SimulationCount{get; set;}
 }

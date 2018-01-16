@@ -1,3 +1,6 @@
+#load "..\shared\datamodel.csx"
+#load "..\shared\collectionsutils.csx"
+
 #r "Microsoft.ServiceBus"
 #r "System.Runtime.Serialization"
 
@@ -98,96 +101,3 @@ public class PathGenerator
     }
 }
 
-public class MarketState
-{
-    public double T { get; set; }
-    public double S { get; set; }
-}
-
-[DataContract]
-public class PricingParameters
-{
-    [DataMember]
-    public string Id { get; set; }
-    [DataMember]
-    public double Strike { get; set; }
-    [DataMember]
-    public double Maturity { get; set; }
-    [DataMember]
-    public double Spot { get; set; }
-    [DataMember]
-    public double Volatility { get; set; }
-    [DataMember]
-    public int SimulationCount { get; set; }
-}
-
-[DataContract]
-public class PathGeneration
-{
-    [DataMember]
-    public PricingParameters Pricing { get; set; }
-    [DataMember]
-    public int SimulationId { get; set; }
-}
-
-[DataContract]
-public class PathAndOption
-{
-    [DataMember]
-    public string PricingId { get; set; }
-    [DataMember]
-    public int SimulationId { get; set; }
-    [DataMember]
-    public int SimulationCount { get; set; }
-    [DataMember]
-    public double Spot { get; set; }
-    [DataMember]
-    public double Strike { get; set; }
-}
-
-[DataContract]
-public class Path
-{
-    [DataMember]
-    public int SimulationId { get; set; }
-    [DataMember]
-    public List<MarketState> States { get; set; }
-}
-
-[DataContract]
-public class PathBatch
-{
-    [DataMember]
-    public List<Path> Paths { get; set; }
-
-    [DataMember]
-    public PricingParameters PricingParameters { get; set; }
-}
-
-public static List<List<T>> ChunkBy<T>(this IEnumerable<T> source, Func<T, long> metric, long maxChunkSize)
-{
-    return source
-        .Aggregate(
-            new
-            {
-                Sum = 0L,
-                Current = (List<T>) null,
-                Result = new List<List<T>>()
-            },
-            (agg, item) =>
-            {
-                var value = metric(item);
-                if (agg.Current == null || agg.Sum + value > maxChunkSize)
-                {
-                    var current = new List<T> { item };
-                    agg.Result.Add(current);
-                    return new { Sum = value, Current = current, agg.Result };
-                }
-
-                agg.Current.Add(item);
-                return new { Sum = agg.Sum + value, agg.Current, agg.Result };
-            })
-        .Result;
-}
-
-private const long MaxServiceBusMessage = 256000;
