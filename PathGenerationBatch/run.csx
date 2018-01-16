@@ -33,7 +33,7 @@ public static async Task SendMessagesAsync(int pathBatchId, IEnumerable<Path> pa
     log.Info($"Chunk paths batch to max size {MaxServiceBusMessage}");
 
     var chunks = paths.ChunkBy(x => new BrokeredMessage(x).Size, MaxServiceBusMessage);
-    var messages = chunks.Select(chunk => new PathBatch { PathBatchId = pathBatchId, PricingParameters = pricingParameters, Paths = chunk })
+    var messages = chunks.Select(chunk => new PathBatch { PathBatchId = chunk.First().PathId, PricingParameters = pricingParameters, Paths = chunk })
         .ToList();
 
     foreach(var mess in messages.Where(m => m != null && m.Paths != null))
@@ -53,7 +53,7 @@ public static Path GeneratePath(int pathId, PricingParameters pricing, TraceWrit
         .TakeWhile(t => t < pricing.Maturity + dt)
         .Aggregate(new List<MarketState>() { new MarketState { T = 0, S = pricing.Spot } }, pathGenerator.Aggregator);
 
-    return new Path { PathId = pathId, States = list.ToList()  };
+    return new Path { PathId = pathId, States = list.ToList() };
 }
 
 public class PathGenerator
