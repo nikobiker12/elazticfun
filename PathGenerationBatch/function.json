@@ -1,7 +1,7 @@
 {
   "bindings": [
     {
-      "name": "pathGenerationBatch",
+      "name": "simulationRequest",
       "type": "serviceBusTrigger",
       "direction": "in",
       "queueName": "path-generation",
