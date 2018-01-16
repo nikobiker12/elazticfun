@@ -1,0 +1,122 @@
+﻿{
+  "swagger": "2.0",
+  "info": {
+    "title": "abbashacka2018.azurewebsites.net",
+    "version": "1.0.0"
+  },
+  "host": "abbashacka2018.azurewebsites.net",
+  "basePath": "/",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/api/Pricing": {
+      "post": {
+        "operationId": "Pricing",
+        "description": "Determines the payoff of an option",
+        "summary": "Calculates pricing",
+        "x-ms-summary": "Calculates costs",
+        "x-ms-visibility": "important",
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "option's informations",
+            "x-ms-summary": "option's informations",
+            "x-ms-visibility": "important",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "payoffName": {
+                  "description": "The payoff Name",
+                  "type": "string",
+                  "x-ms-summary": "Payoff name",
+                  "x-ms-visibility": "important"
+                },
+                "strike": {
+                  "description": "The strike",
+                  "type": "integer",
+                  "x-ms-summary": "strike",
+                  "x-ms-visibility": "important"
+                },
+                "maturity": {
+                  "description": "The maturity",
+                  "type": "integer",
+                  "x-ms-summary": "maturity",
+                  "x-ms-visibility": "important"
+                },
+                "spot": {
+                  "description": "The spot",
+                  "type": "integer",
+                  "x-ms-summary": "spot",
+                  "x-ms-visibility": "important"
+                },
+                "volatility": {
+                  "description": "The volatility",
+                  "type": "integer",
+                  "x-ms-summary": "volatility",
+                  "x-ms-visibility": "important"
+                },
+                "simulationCount": {
+                  "description": "The simulation count",
+                  "type": "integer",
+                  "x-ms-summary": "simulationCount",
+                  "x-ms-visibility": "important"
+                }
+              },
+              "required": [
+                "payoffName",
+                "strike",
+                "maturity",
+                "spot",
+                "volatility",
+                "simulationCount"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Guid of the request",
+            "x-ms-summary": "Message",
+            "schema": {
+              "type": "string",
+              "description": "Returns the GUID of the request",
+              "x-ms-summary": "Message"
+            }
+          },
+          "400": {
+            "description": "The error Message",
+            "x-ms-summary": "Message",
+            "schema": {
+              "type": "string",
+              "description": "The error message",
+              "x-ms-summary": "Message"
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyQuery": []
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {},
+  "securityDefinitions": {
+    "apikeyQuery": {
+      "type": "apiKey",
+      "name": "code",
+      "in": "query"
+    }
+  }
+}
