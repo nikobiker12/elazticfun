@@ -64,18 +64,4 @@ public class SimulationRequest
     public int PathsCount { get; set; }
 }
 
-[DataContract]
-public class PathAndOption
-{
-    [DataMember]
-    public string PricingId { get; set; }
-    [DataMember]
-    public int SimulationId { get; set; }
-    [DataMember]
-    public int SimulationCount { get; set; }
-    [DataMember]
-    public double Spot { get; set; }
-    [DataMember]
-    public double Strike { get; set; }
-}
 

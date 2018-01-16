@@ -12,17 +12,17 @@ using Microsoft.ServiceBus.Messaging;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 
-public static async Task Run(SimulationRequest pathGenerationBatch, TraceWriter log)
+public static async Task Run(SimulationRequest simulationRequest, TraceWriter log)
 {
-    log.Info($"C# ServiceBus queue trigger function processed message: " + pathGenerationBatch.Pricing.Id
-        + ", " + pathGenerationBatch.SimulationId);
+    log.Info($"C# ServiceBus queue trigger function processed message: " + simulationRequest.Pricing.Id
+        + ", " + simulationRequest.SimulationId);
 
-    var paths = Enumerable.Range(1000 * pathGenerationBatch.SimulationId, pathGenerationBatch.PathsCount)
-        .Select(p => GeneratePath(p, pathGenerationBatch.Pricing, log));
+    var paths = Enumerable.Range(1000 * simulationRequest.SimulationId, simulationRequest.PathsCount)
+        .Select(p => GeneratePath(p, simulationRequest.Pricing, log));
 
-    log.Info($"Sending path batch to ServiceBus: " + pathGenerationBatch.Pricing.Id);
+    log.Info($"Sending path batch to ServiceBus: " + simulationRequest.Pricing.Id);
 
-    await SendMessagesAsync(paths, pathGenerationBatch.Pricing);
+    await SendMessagesAsync(paths, simulationRequest.Pricing);
 }
 
 public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParameters pricingParameters)
