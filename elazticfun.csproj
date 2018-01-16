@@ -51,6 +51,9 @@
     <None Update="shared/datamodel.csx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="shared/QueueClientExtensions.csx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>  
     <None Update="local.settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

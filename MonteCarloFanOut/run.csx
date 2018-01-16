@@ -1,11 +1,9 @@
 #load "..\shared\datamodel.csx"
-#load "..\shared\collectionsutils.csx"
+#load "..\shared\QueueClientExtensions.csx"
 
 #r "Microsoft.ServiceBus"
-#r "System.Runtime.Serialization"
 
 using System;
-using System.Runtime.Serialization;
 using Microsoft.Azure.WebJobs;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
@@ -20,7 +18,7 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
     int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SimulationBatchSize"));
     var batchCount = (pricingRequest.SimulationCount + batchSize - 1) / batchSize;
 
-    var paths = Enumerable.Range(0, batchCount)
+    var messages = Enumerable.Range(0, batchCount)
         .Select(i => new SimulationRequest
                     {
                         Pricing = pricingRequest,
@@ -29,10 +27,6 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
                     })
         .Select(p => new BrokeredMessage(p));
 
-    var chunks = paths.ChunkBy(x => 300, MaxServiceBusMessage);
-    foreach (var chunk in chunks)
-    {
-        await queueClient.SendBatchAsync(chunk);
-    }
+    await SendPartitionedBatchAsync(queueClient, messages, false);
 }
 
