@@ -53,14 +53,15 @@ public class PathBatch
 }
 
 
-
 [DataContract]
-public class PathGeneration
+public class SimulationRequest
 {
     [DataMember]
     public PricingParameters Pricing { get; set; }
     [DataMember]
     public int SimulationId { get; set; }
+    [DataMember]
+    public int PathsCount { get; set; }
 }
 
 [DataContract]

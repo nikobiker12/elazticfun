@@ -5,13 +5,9 @@
     "FUNCTIONS_EXTENSION_VERSION": "~1",
     "ScmType": "None",
     "WEBSITE_AUTH_ENABLED": "False",
-    "APPINSIGHTS_INSTRUMENTATIONKEY": "143240f6-4bfd-404b-814e-121316b9b875",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "240d1d77-0d9c-48eb-afc4-d5a78f6d4946",
     "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS": "Endpoint=sb://elazticfun.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=XRNn15dMpkidllvxF5Qhl0r/4zMr20eYxlEfVHqA8Wk=",
-    "AzureWebJobsDashboard": "DefaultEndpointsProtocol=https;AccountName=montecarlolpb829;AccountKey=Z/OM1D18D/nHFEOCbiASTh+0ECZNxnt1Rmua7qsHloo1TfcihavazKbJ/SOW9zKP337X9aHmgOISmZf5CpzwYw==",
-    "WEBSITE_NODE_DEFAULT_VERSION": "6.5.0",
-    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==;EndpointSuffix=core.windows.net",
-    "WEBSITE_CONTENTSHARE": "montecarlolpb829",
-    "WEBSITE_SITE_NAME": "MonteCarloLP",
-    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==;EndpointSuffix=core.windows.net"
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==;EndpointSuffix=core.windows.net",
+    "SimulationBathSize": 10000
   }
 }

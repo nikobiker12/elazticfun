@@ -12,19 +12,13 @@ using Microsoft.ServiceBus.Messaging;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 
-public static async Task Run(PathGeneration pathGenerationBatch, TraceWriter log)
+public static async Task Run(SimulationRequest pathGenerationBatch, TraceWriter log)
 {
     log.Info($"C# ServiceBus queue trigger function processed message: " + pathGenerationBatch.Pricing.Id
         + ", " + pathGenerationBatch.SimulationId);
 
-    int batchSize = Math.Min(1000, pathGenerationBatch.Pricing.SimulationCount - 1000 * pathGenerationBatch.SimulationId);
-    var paths = Enumerable.Range(1000 * pathGenerationBatch.SimulationId, batchSize)
-        .Select(i => new PathGeneration
-        {
-            Pricing = pathGenerationBatch.Pricing,
-            SimulationId = i
-        })
-        .Select(p => GeneratePath(p, log));
+    var paths = Enumerable.Range(1000 * pathGenerationBatch.SimulationId, pathGenerationBatch.PathsCount)
+        .Select(p => GeneratePath(p, pathGenerationBatch.Pricing, log));
 
     log.Info($"Sending path batch to ServiceBus: " + pathGenerationBatch.Pricing.Id);
 
@@ -44,21 +38,17 @@ public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParam
     await queueClient.SendBatchAsync(messages);
 }
 
-public static Path GeneratePath(PathGeneration pathGeneration, TraceWriter log)
+public static Path GeneratePath(int pathId, PricingParameters pricing, TraceWriter log)
 {
-    PathGenerator pathGenerator = new PathGenerator(
-        pathGeneration.SimulationId,
-        pathGeneration.Pricing.Volatility,
-        pathGeneration.Pricing.Maturity);
-
+    PathGenerator pathGenerator = new PathGenerator(pathId, pricing.Volatility, pricing.Maturity);
 
     const double dt = 1.0 / 12;
     var list = Enumerable.Range(1, 1000)
         .Select(i => i * dt)
-        .TakeWhile(t => t < pathGeneration.Pricing.Maturity + dt)
-        .Aggregate(new List<MarketState>() { new MarketState { T = 0, S = pathGeneration.Pricing.Spot } }, pathGenerator.Aggregator);
+        .TakeWhile(t => t < pricing.Maturity + dt)
+        .Aggregate(new List<MarketState>() { new MarketState { T = 0, S = pricing.Spot } }, pathGenerator.Aggregator);
 
-    return new Path { SimulationId = pathGeneration.SimulationId, States = list };
+    return new Path { SimulationId = pathId, States = list };
 }
 
 public class PathGenerator
