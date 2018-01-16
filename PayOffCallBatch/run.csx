@@ -1,15 +1,12 @@
 #load "..\shared\datamodel.csx"
 
-#r "System.Runtime.Serialization"
-
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 public static async Task Run(PathBatch pathBatch, IAsyncCollector<PricingResult> outputTable, TraceWriter log)
 {
-    log.Info($"Queue trigger function for batch {pathBatch.PathBatchId} with {pathBatch.Paths.Count} paths");
+    log.Info($"Payoff trigger function for batch {pathBatch.PathBatchId} with {pathBatch.Paths.Count} paths");
 
     var price = pathBatch.Paths.Select(p => VanillaCallPayoff(p.States, pathBatch.PricingParameters))
         .Sum();
