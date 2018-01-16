@@ -9,7 +9,7 @@
     "APPINSIGHTS_INSTRUMENTATIONKEY": "240d1d77-0d9c-48eb-afc4-d5a78f6d4946",
     "pricinglpmc_RootManageSharedAccessKey_SERVICEBUS": "Endpoint=sb://elazticfun.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=XRNn15dMpkidllvxF5Qhl0r/4zMr20eYxlEfVHqA8Wk=",
     "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==",
-    "SimulationBatchSize": "1000",
+    "SimulationBatchSize": "10000",
     "AzureWebJobsDashboard": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==",
     "WEBSITE_NODE_DEFAULT_VERSION": "6.5.0",
     "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=elazticfun9bbb;AccountKey=pG58/EA6QnmJLYsdhtn8GjQpxOPPHFZd3aqzFHkpBISZbLGgp3qLY1yOa+XmEXAcfc1jYGVGIJ5ZHDAiWtDHLA==",

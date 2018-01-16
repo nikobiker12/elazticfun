@@ -26,7 +26,7 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
                         Pricing = pricingRequest,
                         SimulationId = i,
                         PathsCount = batchSize
-        })
+                    })
         .Select(p => new BrokeredMessage(p));
 
     var chunks = paths.ChunkBy(x => 300, MaxServiceBusMessage);

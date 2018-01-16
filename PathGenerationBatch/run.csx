@@ -17,7 +17,7 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     log.Info($"C# ServiceBus queue trigger function processed message: " + simulationRequest.Pricing.Id
         + ", " + simulationRequest.SimulationId + " for " + simulationRequest.PathsCount + " paths");
 
-    var paths = Enumerable.Range(1000 * simulationRequest.SimulationId, simulationRequest.PathsCount)
+    var paths = Enumerable.Range(simulationRequest.PathsCount * simulationRequest.SimulationId, simulationRequest.PathsCount)
         .Select(p => GeneratePath(p, simulationRequest.Pricing, log));
 
     log.Info($"Sending path batch to ServiceBus: " + simulationRequest.Pricing.Id);
@@ -31,20 +31,16 @@ public static async Task SendMessagesAsync(IEnumerable<Path> paths, PricingParam
     QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
 
     log.Info($"Chunk paths batch to max size {MaxServiceBusMessage}");
-//    var dcs = new DataContractSerializer(typeof(PathBatch));        
-    
+
     var chunks = paths.ChunkBy(x => new BrokeredMessage(x).Size, MaxServiceBusMessage);
     var messages = chunks.Select(chunk => new PathBatch { PricingParameters = pricingParameters, Paths = chunk })
         .ToList();
-        
+
     foreach(var mess in messages.Where(m => m != null && m.Paths != null))
     {
         log.Info($"Sending path batch to ServiceBus (count = {mess.Paths.Count}, size = {new BrokeredMessage(mess).Size})");
-        queueClient.Send(new BrokeredMessage(mess));
+        await queueClient.SendAsync(new BrokeredMessage(mess));
     }
-
-
-
 }
 
 public static Path GeneratePath(int pathId, PricingParameters pricing, TraceWriter log)
