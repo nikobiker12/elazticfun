@@ -1,3 +1,4 @@
+#load "..\shared\Constants.csx"
 #load "..\shared\datamodel.csx"
 #load "..\shared\PathGenerationUtils.csx"
 #load "..\shared\QueueClientExtensions.csx"
@@ -7,19 +8,22 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+
+using Microsoft.Azure.WebJobs;
+using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Linq;
 using System.Web;
 using System.Net;
 using System.IO;
+using Newtonsoft.Json.Linq;
 
 public static async Task Run(SimulationRequest simulationRequest, TraceWriter log)
 {
-    log.Info($"C# ServiceBus queue trigger function processed message: " + simulationRequest.RequestId
-        + ", " + simulationRequest.SimulationId + " for " + simulationRequest.SimulationCount + " paths");
+    log.Info("ServiceBus queue trigger function 'PathGenerationBatch'.");
+    log.Info($"Processing simulation : {simulationRequest.RequestId}, {simulationRequest.SimulationId} for {simulationRequest.SimulationCount} paths.");
 
     int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SimulationBatchSize"));
 
@@ -43,7 +47,7 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     foreach (var pathBatch in pathBatchLists)
     {
         var payoffsList = await payoffSumFunc(pathBatch, log);
-        PublishResult(payoffsList, simulationRequest);
+        PublishResult(payoffsList, pathBatch, log);
     }
 }
 
@@ -112,14 +116,37 @@ public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, i
         .Select(x => x.Select(v => v.Value));
 }
 
-public static void PublishResult(IEnumerable<double> payoffList, SimulationRequest simulationRequest)
+public static void PublishResult(IEnumerable<double> payoffList, PathBatch pathBatch, TraceWriter log)
 {
-    //CloudStorageAccount storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+    var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
+    var tableClient = storage.CreateCloudTableClient();
+    var table = tableClient.GetTableReference(PRICING_RESULTS_TABLE);
 
-    //// Create the table client.
-    //CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
 
-    //TableOperation retrieveOperation = TableOperation.Retrieve(simulationRequest.RequestId, simulationRequest.SimulationId.ToString());
-    //TableResult retrievedResult = table.Execute(retrieveOperation);
-    //TableEntity entity = (PricingResult) retrievedResult.Result;
+    // https://azure.microsoft.com/en-us/blog/managing-concurrency-in-microsoft-azure-storage-2/
+    const int MaxRetries = 5;
+    for (int i = 0; i < MaxRetries; ++i)
+    {
+        try
+        {
+            TableOperation retrieveOperation = TableOperation.Retrieve<PricingResult>(pathBatch.SimulationRequest.RequestId, pathBatch.SimulationRequest.SimulationId.ToString());
+            TableResult retrievedResult = table.Execute(retrieveOperation);
+            PricingResult pricingResult = (PricingResult) retrievedResult.Result;
+            pricingResult.IndicatorSum += payoffList.Sum();
+            pricingResult.PathsSum += payoffList.Count();
+
+
+            TableOperation replaceOperation = TableOperation.Replace(pricingResult);
+            TableResult replaceResult = table.Execute(replaceOperation);
+
+            break;
+        }
+        catch (StorageException ex)
+        {
+            if (ex.RequestInformation.HttpStatusCode == 412)
+                log.Warning("Optimistic concurrency violation – entity has changed since it was retrieved.");
+            else
+                throw;
+        }
+    }
 }
