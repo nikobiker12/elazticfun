@@ -1,108 +1,82 @@
 #load "..\shared\datamodel.csx"
+#load "..\shared\PathGenerationUtils.csx"
 #load "..\shared\QueueClientExtensions.csx"
 
-#r "Microsoft.ServiceBus"
-#r "System.Runtime.Serialization"
+#r "Microsoft.WindowsAzure.Storage"
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
-using System.Runtime.Serialization;
 using System.Collections.Generic;
+
+using Microsoft.WindowsAzure.Storage.Table;
 
 public static async Task Run(SimulationRequest simulationRequest, TraceWriter log)
 {
-    log.Info($"C# ServiceBus queue trigger function processed message: " + simulationRequest.Pricing.Id
-        + ", " + simulationRequest.SimulationId + " for " + simulationRequest.PathsCount + " paths");
+    log.Info($"C# ServiceBus queue trigger function processed message: " + simulationRequest.RequestId
+        + ", " + simulationRequest.SimulationId + " for " + simulationRequest.SimulationCount + " paths");
 
-    var timesPoints = GenerateTimePoints(simulationRequest.Pricing, log);
-    var paths = Enumerable.Range(simulationRequest.PathsCount * simulationRequest.SimulationId, simulationRequest.PathsCount)
-        .Select(pathId => GeneratePath(pathId, simulationRequest.Pricing, timesPoints, log));
+    int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SimulationBatchSize"));
 
-    log.Info($"Sending path batch to ServiceBus: " + simulationRequest.Pricing.Id);
+    var timesPoints = GenerateTimePoints(simulationRequest, log);
+    var pathBatchLists = Enumerable.Range(0, simulationRequest.SimulationCount)
+        .Select(pathId => GeneratePath(pathId, simulationRequest, timesPoints, log))
+        .Chunk(batchSize)
+        .Select(paths => new PathBatch { SimulationRequest = simulationRequest, Paths = paths.ToList(), Times = timesPoints });
 
-    await SendMessagesAsync(simulationRequest.SimulationId, paths, simulationRequest.Pricing, log);
-}
-
-public static async Task SendMessagesAsync(int pathBatchId, IEnumerable<Path> paths, PricingParameters pricingParameters, TraceWriter log)
-{
-    var connectionString = Environment.GetEnvironmentVariable("pricinglpmc_RootManageSharedAccessKey_SERVICEBUS") + ";EntityPath=path-payoff";
-    QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
-
-    var emptyPathMessageSize = new BrokeredMessage(new PathBatch { PathBatchId = 0, PricingParameters = pricingParameters, Paths = new List<Path>() }).Size;
-    var onePathSize = new BrokeredMessage(paths.First()).Size;
-    var maxSize = MaxBathSizeInBytes - emptyPathMessageSize;
-
-    log.Info($"Chunk paths batch to max size {maxSize} (path size : {onePathSize})");
-    var messages = paths.ChunkBy(x => onePathSize, maxSize)
-        .Select(chunk => new PathBatch { PathBatchId = chunk[0].PathId, PricingParameters = pricingParameters, Paths = chunk });
-
-    foreach (var mess in messages)
+    Func<PathBatch, Task<List<double>>> payoffSumFunc;
+    switch (simulationRequest.PayoffName)
     {
-        log.Info($"Sending path batch to ServiceBus (count = {mess.Paths.Count}, size = {new BrokeredMessage(mess).Size})");
-        await queueClient.SendAsync(new BrokeredMessage(mess));
+        case "vanilla-call":
+            payoffSumFunc = VanillaCallPayoff;
+            break;
+        default:
+            payoffSumFunc = CustomHttpPayOff;
+            break;
+    }
+
+    foreach (var pathBatch in pathBatchLists)
+    {
+        var payoffsList = await payoffSumFunc(pathBatch);
+        PublishResult(payoffsList, simulationRequest);
     }
 }
 
-public static List<double> GenerateTimePoints(PricingParameters pricing, TraceWriter log)
+public static Task<List<double>> VanillaCallPayoff(PathBatch pathBatch)
 {
-    const double dt = 1.0 / 12;
-    var list = Enumerable.Range(1, 1000)
-        .Select(i => i * dt)
-        .TakeWhile(t => t < pricing.Maturity + dt)
-        .ToList();
-
-    return list;
+    return Task.FromResult(pathBatch.Paths.Select(path =>
+    {
+        var lastSpot = path.Spots[path.Spots.Count - 1];
+        return Math.Max(lastSpot - pathBatch.SimulationRequest.Strike, 0);
+    }).ToList());
 }
 
-public static Path GeneratePath(int pathId, PricingParameters pricing, List<double> timePoints, TraceWriter log)
+public static Task<List<double>> CustomHttpPayOff(PathBatch pathBatch)
 {
-    PathGenerator pathGenerator = new PathGenerator(pathId, pricing.Volatility, pricing.Maturity);
-
-    var spots = timePoints
-        .Aggregate(new List<MarketState>() { new MarketState { T = 0, S = pricing.Spot } }, pathGenerator.Aggregator);
-
-    return new Path { PathId = pathId, Spots = spots.Select(ms => ms.S).ToList() };
+    return null;
 }
 
-public class PathGenerator
+public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, int batchSize)
 {
-    Random _random;
-    double _volatility;
-    double _maturity;
+    if (source == null)
+        return new List<List<T>>();
+    if (source.Count() < batchSize)
+        return new List<List<T>> { new List<T>(source) };
 
-    public PathGenerator(int seed, double volatility, double maturity)
-    {
-        _random = new Random(seed);
-        _volatility = volatility;
-        _maturity = maturity;
-    }
+    return source
+        .Select((x, i) => new { Index = i, Value = x })
+        .GroupBy(x => x.Index / batchSize)
+        .Select(x => x.Select(v => v.Value));
+}
 
-    public List<MarketState> Aggregator(List<MarketState> states, double t)
-    {
-        states.Add(Next(states[states.Count - 1], t));
-        return states;
-    }
+public static void PublishResult(List<double> payoffList, SimulationRequest simulationRequest)
+{
+    //CloudStorageAccount storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
 
-    public MarketState Next(MarketState inState, double t)
-    {
-        MarketState outState = new MarketState();
-        outState.T = Math.Min(t, _maturity);
-        double dt = outState.T - inState.T;
-        double dLogS = -.5 * _volatility * _volatility * dt + _volatility * NextGaussian(dt);
-        outState.S = inState.S * Math.Exp(dLogS);
-        return outState;
-    }
+    //// Create the table client.
+    //CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
 
-    double NextGaussian(double dt)
-    {
-        double u1 = 1.0 - _random.NextDouble(); //uniform(0,1] random doubles
-        double u2 = 1.0 - _random.NextDouble();
-        double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
-             Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
-        double randNormal = Math.Sqrt(dt) * randStdNormal; //random normal(0,dt^2)
-        return randNormal;
-    }
+    //TableOperation retrieveOperation = TableOperation.Retrieve(simulationRequest.RequestId, simulationRequest.SimulationId.ToString());
+    //TableResult retrievedResult = table.Execute(retrieveOperation);
+    //TableEntity entity = (PricingResult) retrievedResult.Result;
 }

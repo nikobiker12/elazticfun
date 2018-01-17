@@ -36,6 +36,22 @@ public static async Task<HttpResponseMessage> Run(
     if (simulationCount == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError("Please pass simulationCount in the request body"));
 
+    int? spotBumpCount = data?.spotBumpCount;
+    if (spotBumpCount == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError("Please pass spotBumpCount in the request body"));
+
+    int? volBumpCount = data?.volBumpCount;
+    if (volBumpCount == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError("Please pass volBumpCount in the request body"));
+
+    double? spotBumpSize = data?.spotBumpSize;
+    if (spotBumpSize == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError("Please pass spotBumpSize in the request body"));
+
+    double? volBumpSize = data?.volBumpSize;
+    if (volBumpSize == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError("Please pass volBumpSize in the request body"));
+
     PricingParameters pricingParameters = new PricingParameters
     {
         Id = Guid.NewGuid().ToString(),
@@ -44,7 +60,11 @@ public static async Task<HttpResponseMessage> Run(
         Maturity = maturity.GetValueOrDefault(),
         Spot = spot.GetValueOrDefault(),
         Volatility = volatility.GetValueOrDefault(),
-        SimulationCount = simulationCount.GetValueOrDefault()
+        SimulationCount = simulationCount.GetValueOrDefault(),
+        SpotBumpCount = spotBumpCount.Value,
+        VolBumpCount = volBumpCount.Value,
+        SpotBumpSize = spotBumpSize.Value,
+        VolBumpSize = volBumpSize.Value,
     };
 
     await pricingRequests.AddAsync(pricingParameters);
