@@ -32,6 +32,7 @@ public static List<SimulationRequest> GenrerateSimulationRequests(PricingParamet
         {
                     RequestId = pricingRequest.Id,
                     SimulationId = i,
+                    OptionType = pricingRequest.OptionType,
                     PayoffName = pricingRequest.PayoffName,
                     Maturity = pricingRequest.Maturity,
                     Spot = t.Item1,

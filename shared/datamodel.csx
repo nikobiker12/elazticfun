@@ -9,8 +9,11 @@ using Microsoft.WindowsAzure.Storage.Table;
 [DataContract]
 public class PricingParameters
 {
+    public enum EOptionType { Call = 1, Put = -1 }
     [DataMember]
     public string Id { get; set; }
+    [DataMember]
+    public EOptionType OptionType { get; set; }
     [DataMember]
     public string PayoffName { get; set; }
     [DataMember]
@@ -40,6 +43,8 @@ public class SimulationRequest
     public string RequestId { get; set; }
     [DataMember]
     public int SimulationId { get; set; }
+    [DataMember]
+    public PricingParameters.EOptionType OptionType { get; set; }
     [DataMember]
     public string PayoffName { get; set; }
     [DataMember]
