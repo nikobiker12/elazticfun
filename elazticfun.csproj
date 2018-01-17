@@ -54,6 +54,9 @@
     <None Update="local.settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="shared\Constants.csx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="shared\PathGenerationUtils.csx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
