@@ -80,4 +80,25 @@ public class PricingResult
     public int TotalPathsCount { get; set; }
 }
 
+[DataContract]
+public class GetRequestResult
+{
+    public GetRequestResult(string requestId)
+    {
+        RequestId = requestId;
+    }
+    [DataMember]
+    public string RequestId { get; set; }
+}
+
+[DataContract]
+public class GetRequestError
+{
+    public GetRequestError(string error)
+    {
+        Error = error;
+    }
+    [DataMember]
+    public string Error { get; set; }
+}
 
