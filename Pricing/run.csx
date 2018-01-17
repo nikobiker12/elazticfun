@@ -7,8 +7,6 @@ public static async Task<HttpResponseMessage> Run(
     IAsyncCollector<PricingParameters> pricingRequests,
     TraceWriter log)
 {
-     log.Info("C# HTTP trigger function processed a request.");
-
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
 

@@ -16,8 +16,8 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 public static async Task Run(SimulationRequest simulationRequest, TraceWriter log)
 {
-    log.Info($"ServiceBus queue trigger function 'PathGenerationBatch'. Processing simulation : " + simulationRequest.RequestId
-        + ", " + simulationRequest.SimulationId + " for " + simulationRequest.SimulationCount + " paths");
+    log.Info($"Function 'PathGenerationBatch' triggered. Processing simulation : {simulationRequest.RequestId} "
+        + $", {simulationRequest.SimulationId} ({simulationRequest.Spot}, {simulationRequest.Volatility}) for {simulationRequest.SimulationCount} paths");
 
     int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SimulationBatchSize"));
 

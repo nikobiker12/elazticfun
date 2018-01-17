@@ -18,7 +18,8 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
 {
-    log.Info($"MonteCarloFanOut function start: " + pricingRequest);
+    log.Info($"Function 'MonteCarloFanOut' triggered. SimulationCount: {pricingRequest.SimulationCount}, " +
+        $"SpotBumpSize: {pricingRequest.SpotBumpSize}, SpotBumpCount:{pricingRequest.SpotBumpCount}, VolBumpSize:{pricingRequest.VolBumpSize}, VolBumpCount:{pricingRequest.VolBumpCount}");
 
     var simulationRequestsList = GenrerateSimulationRequests(pricingRequest, log);
 
