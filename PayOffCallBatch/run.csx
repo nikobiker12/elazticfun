@@ -8,7 +8,7 @@ public static async Task Run(PathBatch pathBatch, IAsyncCollector<PricingResult>
 {
     log.Info($"Payoff trigger function for batch {pathBatch.PathBatchId} with {pathBatch.Paths.Count} paths");
 
-    var price = pathBatch.Paths.Select(p => VanillaCallPayoff(p.States, pathBatch.PricingParameters))
+    var price = pathBatch.Paths.Select(p => VanillaCallPayoff(pathBatch.Times, p.Spots, pathBatch.PricingParameters))
         .Sum();
 
     var result = new PricingResult
@@ -23,8 +23,8 @@ public static async Task Run(PathBatch pathBatch, IAsyncCollector<PricingResult>
     await outputTable.AddAsync(result);
 }
 
-public static double VanillaCallPayoff(List<MarketState> states, PricingParameters pricingParameters)
+public static double VanillaCallPayoff(List<double> times, List<double> spots, PricingParameters pricingParameters)
 {
-    var lastSpot = states[states.Count - 1].S;
+    var lastSpot = spots[spots.Count - 1];
     return Math.Max(lastSpot - pricingParameters.Strike, 0);
 }

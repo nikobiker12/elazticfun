@@ -39,7 +39,7 @@ public class Path
     [DataMember]
     public int PathId { get; set; }
     [DataMember]
-    public List<MarketState> States { get; set; }
+    public List<double> Spots { get; set; }
 }
 
 [DataContract]
@@ -47,6 +47,9 @@ public class PathBatch
 {
     [DataMember]
     public int PathBatchId { get; set; }
+
+    [DataMember]
+    public List<double> Times { get; set; }
 
     [DataMember]
     public List<Path> Paths { get; set; }
