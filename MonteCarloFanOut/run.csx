@@ -25,10 +25,12 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
 
     InitializePricingResults(simulationRequestsList);
 
+    var splittedSimulationRequestsList = SplitSimulationRequestsList(simulationRequestsList, pricingRequest);
+
     var connectionString = Environment.GetEnvironmentVariable(AZURESERVICEBUS_CONNECTIONSTRING_KEY) + ";EntityPath=path-generation";
     QueueClient queueClient = QueueClient.CreateFromConnectionString(connectionString);
 
-    var messagesList = simulationRequestsList.Select(sr => new BrokeredMessage(sr));
+    var messagesList = splittedSimulationRequestsList.Select(sr => new BrokeredMessage(sr));
     await SendPartitionedBatchAsync(queueClient, messagesList, false);
 }
 
@@ -74,4 +76,29 @@ public static void InitializePricingResults(List<SimulationRequest> simulationRe
     .Aggregate(new TableBatchOperation(), (batchOpAgg, pr) => { batchOpAgg.Add(TableOperation.Insert(pr)); return batchOpAgg; });
 
     var result = table.ExecuteBatch(batchOp);
+}
+
+public static IEnumerable<SimulationRequest> SplitSimulationRequestsList(IEnumerable<SimulationRequest> simulationRequestsList, PricingParameters pricingRequest)
+{
+    int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable(SIMULATIONBATCHSIZE_KEY));
+    int batchCount = (pricingRequest.SimulationCount + batchSize - 1) / batchSize;
+
+    var splittedList = simulationRequestsList.SelectMany(sr => Enumerable.Range(0, batchCount),
+        (sr, batchIndex) => new SimulationRequest
+        {
+            RequestId = sr.RequestId,
+            SimulationId = sr.SimulationId,
+            BatchStartIndex = batchIndex*batchSize,
+            BatchPatchsCount = Math.Min(batchSize, pricingRequest.SimulationCount - batchIndex*batchSize),
+            OptionType = sr.OptionType,
+            PayoffName = sr.PayoffName,
+            Strike = sr.Strike,
+            Maturity = sr.Maturity,
+            Spot = sr.Spot,
+            Volatility = sr.Volatility,
+            SimulationCount = sr.SimulationCount,
+        }
+    );
+
+    return splittedList;
 }

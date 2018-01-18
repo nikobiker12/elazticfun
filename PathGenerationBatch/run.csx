@@ -25,13 +25,11 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     log.Info("ServiceBus queue trigger function 'PathGenerationBatch'.");
     log.Info($"Processing simulation : {simulationRequest.RequestId}, {simulationRequest.SimulationId} for {simulationRequest.SimulationCount} paths.");
 
-    int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable(SIMULATIONBATCHSIZE_KEY));
-
     var timesPoints = GenerateTimePoints(simulationRequest, log);
-    var pathBatchLists = Enumerable.Range(0, simulationRequest.SimulationCount)
-        .Select(pathId => GeneratePath(pathId, simulationRequest, timesPoints, log))
-        .Chunk(batchSize)
-        .Select(paths => new PathBatch { SimulationRequest = simulationRequest, Paths = paths.ToList(), Times = timesPoints });
+    var pathLists = Enumerable.Range(simulationRequest.BatchStartIndex, simulationRequest.BatchPatchsCount)
+        .Select(pathId => GeneratePath(pathId, simulationRequest, timesPoints, log));
+
+    var pathBatch = new PathBatch { SimulationRequest = simulationRequest, Paths = pathLists.ToList(), Times = timesPoints };
 
     Func<PathBatch, TraceWriter, Task<IEnumerable<double>>> payoffSumFunc;
     switch (simulationRequest.PayoffName)
@@ -44,11 +42,8 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
             break;
     }
 
-    foreach (var pathBatch in pathBatchLists)
-    {
-        var payoffsList = await payoffSumFunc(pathBatch, log);
-        PublishPricingResults(payoffsList, pathBatch, log);
-    }
+    var payoffsList = await payoffSumFunc(pathBatch, log);
+    PublishPricingResults(payoffsList, pathBatch, log);
 }
 
 public static Task<IEnumerable<double>> VanillaPayoff(PathBatch pathBatch, TraceWriter log)
@@ -72,12 +67,15 @@ public static async Task<IEnumerable<double>> CustomHttpPayOff(PathBatch pathBat
     log.Info($"JSON sent to custom script = {jsonString}");
 
     string url = System.Environment.GetEnvironmentVariable($"PAYOFFMETHODURI_{pathBatch.SimulationRequest.PayoffName}");
+    if (String.IsNullOrEmpty(url))
+        url = System.Environment.GetEnvironmentVariable($"PAYOFFMETHODURI");
+
     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
     request.Method = "POST";
     request.ContentType = "application/json";
     request.ContentLength = jsonString.Length;
     using (Stream webStream = await request.GetRequestStreamAsync())
-    using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
+    using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.UTF8))
     {
         await requestWriter.WriteAsync(jsonString);
     }
