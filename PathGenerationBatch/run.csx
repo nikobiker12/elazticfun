@@ -58,10 +58,10 @@ public static Task<List<double>> VanillaPayoff(PathBatch pathBatch, TraceWriter 
 public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, TraceWriter log)
 {
     dynamic json = new JObject();
-    json.Paths = new JArray(pathBatch.Paths.Select(path => new JArray(path.Spots.ToArray())));
-    json.OptionType = (int)pathBatch.SimulationRequest.OptionType;
-    json.Strike = pathBatch.SimulationRequest.Strike;
-    json.PayoffName = pathBatch.SimulationRequest.PayoffName;
+    json.paths = new JArray(pathBatch.Paths.Select(path => new JArray(path.Spots.ToArray())));
+    json.optionType = (int)pathBatch.SimulationRequest.OptionType;
+    json.strike = pathBatch.SimulationRequest.Strike;
+    json.payoffName = pathBatch.SimulationRequest.PayoffName;
     string jsonString = json.ToString(Newtonsoft.Json.Formatting.None);
     log.Info($"JSON sent to custom script = {jsonString}");
 
@@ -74,7 +74,7 @@ public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, Tra
     request.ContentType = "application/json";
     request.ContentLength = jsonString.Length;
     using (Stream webStream = await request.GetRequestStreamAsync())
-    using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.UTF8))
+    using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
     {
         await requestWriter.WriteAsync(jsonString);
     }
