@@ -16,19 +16,15 @@ class PricingResult
     public int TotalPathCount;
     public double Spot;
     public double Volatility;
+    public string RequestId;
 }
 
-public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, string pricingRequestId, TraceWriter log)
 {
     log.Info("C# HTTP trigger function processed a request.");
 
-    // parse query parameter
-    string pricingRequestId = req.GetQueryNameValuePairs()
-        .FirstOrDefault(q => string.Compare(q.Key, "pricingRequestId", true) == 0)
-        .Value;
-
     if (pricingRequestId == null)
-        return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a pricingRequestId in a GET request");
+        return req.CreateResponse(HttpStatusCode.BadRequest, new PricingRequestErrorResponse("Please pass a pricingRequestId in a GET request"));
 
     var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable(AZUREWEBJOBSSTORAGE_CONNECTIONSTRING_KEY));
     var tableClient = storage.CreateCloudTableClient();
@@ -44,7 +40,8 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         ProcessedPathCount = result.PathsSum,
         TotalPathCount = result.TotalPathsCount,
         Spot = result.Spot,
-        Volatility = result.Volatility
+        Volatility = result.Volatility,
+        RequestId = result.PartitionKey
     });
 
     return req.CreateResponse(HttpStatusCode.OK, outputs.ToArray());

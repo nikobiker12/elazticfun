@@ -92,15 +92,3 @@ public class PricingRequestResultResponse
     [DataMember]
     public string RequestId { get; set; }
 }
-
-[DataContract]
-public class PricingRequestErrorResponse
-{
-    public PricingRequestErrorResponse(string error)
-    {
-        Error = error;
-    }
-
-    [DataMember]
-    public string Error { get; set; }
-}

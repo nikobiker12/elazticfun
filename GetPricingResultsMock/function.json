@@ -7,8 +7,7 @@
       "direction": "in",
       "methods": [
         "get"
-      ],
-      "route": "pricing/{pricingRequestId}"
+      ]
     },
     {
       "name": "$return",
