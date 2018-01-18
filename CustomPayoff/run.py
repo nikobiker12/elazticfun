@@ -4,9 +4,9 @@ import math
 
 
 def customPayoffPrice(payoffName, postreqdata):
-	if(payOffName == "asian-average"):
-		return arithmeticAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])	
-	elif(payOffName == "geometric-average"):
+	if(payoffName == "asian-average"):
+		return arithmeticAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])
+	elif(payoffName == "asian-geometric"):
 		return geometricAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])
 	elif(payoffName == "oneTouch"):
 		return geometricAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])
@@ -50,7 +50,7 @@ def oneTouch(strike, spots):
 
 postreqdata = json.loads(open(os.environ['req']).read())
 response = open(os.environ['res'], 'w')
-response.write(str(customPayoffPrice(payoffName, postreqdata)))
+response.write(str(customPayoffPrice(postreqdata['payoffName'], postreqdata)))
 response.close()
 
 
