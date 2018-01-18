@@ -21,6 +21,12 @@
     <None Update="GetPricingResults\run.csx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="GetPricingResultsMock\function.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="GetPricingResultsMock\run.csx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
      <None Update="host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

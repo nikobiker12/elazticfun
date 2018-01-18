@@ -16,6 +16,7 @@
     "WEBSITE_CONTENTSHARE": "elazticfun9bbb",
     "WEBSITE_AUTH_AUTO_AAD": "False",
     "WEBSITE_SITE_NAME": "ElazticFun",
-    "WEBSITE_AUTH_LOGOUT_PATH": "/.auth/logout"
+    "WEBSITE_AUTH_LOGOUT_PATH": "/.auth/logout",
+    "PAYOFFMETHODURI" : "https://elazticfun.azurewebsites.net/api/CustomPayoff?code=KZSHD3G4mzuaQOHsmx1laWl77x7EepXEuobMnIpyIX2c0jiCSBERjg=="
   }
 }

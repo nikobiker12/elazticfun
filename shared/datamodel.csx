@@ -44,6 +44,10 @@ public class SimulationRequest
     [DataMember]
     public int SimulationId { get; set; }
     [DataMember]
+    public int BatchStartIndex { get; set; }
+    [DataMember]
+    public int BatchPatchsCount { get; set; }
+    [DataMember]
     public PricingParameters.EOptionType OptionType { get; set; }
     [DataMember]
     public string PayoffName { get; set; }
