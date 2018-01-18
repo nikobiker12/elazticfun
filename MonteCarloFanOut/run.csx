@@ -34,8 +34,8 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
 
 public static List<SimulationRequest> GenrerateSimulationRequests(PricingParameters pricingRequest, TraceWriter log)
 {
-    return Enumerable.Range(-pricingRequest.SpotBumpCount, pricingRequest.SpotBumpCount)
-        .SelectMany(p => Enumerable.Range(-pricingRequest.VolBumpCount, pricingRequest.VolBumpCount),
+    return Enumerable.Range(-pricingRequest.SpotBumpCount, 2 * pricingRequest.SpotBumpCount + 1)
+        .SelectMany(p => Enumerable.Range(-pricingRequest.VolBumpCount, 2 * pricingRequest.VolBumpCount + 1),
         (spotOffset, volOffset) => (BumpedSpot: pricingRequest.Spot * (1 + spotOffset * pricingRequest.SpotBumpSize),
                                     BumpedVol: pricingRequest.Volatility * (1 + volOffset * pricingRequest.VolBumpSize)))
         .Select((t, i) => new SimulationRequest
