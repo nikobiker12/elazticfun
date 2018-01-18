@@ -92,4 +92,14 @@ public class PricingResultEntity : TableEntity
     public int TotalPathsCount { get; set; }
 }
 
+[DataContract]
+public class PricingRequestErrorResponse
+{
+    public PricingRequestErrorResponse(string error)
+    {
+        Error = error;
+    }
 
+    [DataMember]
+    public string Error { get; set; }
+}
