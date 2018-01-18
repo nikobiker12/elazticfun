@@ -36,8 +36,8 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, string
     var outputs = queryResult.Select(result => new PricingResult
     {
         Price = result.PathsSum == 0.0 ? 0.0 : result.IndicatorSum / result.PathsSum,
-        Progress = result.PathsSum / result.TotalPathsCount,
-        ProcessedPathCount = result.PathsSum,
+        Progress = ((double)Math.Min(result.PathsSum, result.TotalPathsCount)) / (double)result.TotalPathsCount,
+        ProcessedPathCount = Math.Min(result.PathsSum, result.TotalPathsCount),
         TotalPathCount = result.TotalPathsCount,
         Spot = result.Spot,
         Volatility = result.Volatility,
