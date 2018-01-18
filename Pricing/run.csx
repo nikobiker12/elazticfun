@@ -19,6 +19,7 @@ public static async Task<HttpResponseMessage> Run(
     if (!System.Enum.TryParse(optionType, out PricingParameters.EOptionType optionTypeE))
         return req.CreateResponse(HttpStatusCode.BadRequest, new PricingRequestErrorResponse($"optionType \"{optionType}\" is not valid. Must be Call or Put."));
 
+
     string payoffName = data?.payoffName;
     if (String.IsNullOrEmpty(payoffName))
         return req.CreateResponse(HttpStatusCode.BadRequest, new PricingRequestErrorResponse("Please pass payoffName in the request body"));
