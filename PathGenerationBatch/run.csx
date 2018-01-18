@@ -118,9 +118,9 @@ public static void PublishPricingResults(IEnumerable<double> payoffList, PathBat
     {
         try
         {
-            TableOperation retrieveOperation = TableOperation.Retrieve<PricingResult>(pathBatch.SimulationRequest.RequestId, pathBatch.SimulationRequest.SimulationId.ToString());
+            TableOperation retrieveOperation = TableOperation.Retrieve<PricingResultEntity>(pathBatch.SimulationRequest.RequestId, pathBatch.SimulationRequest.SimulationId.ToString());
             TableResult retrievedResult = table.Execute(retrieveOperation);
-            PricingResult pricingResult = (PricingResult) retrievedResult.Result;
+            PricingResultEntity pricingResult = (PricingResultEntity) retrievedResult.Result;
             pricingResult.IndicatorSum += payoffList.Sum();
             pricingResult.PathsSum += payoffList.Count();
 

@@ -83,7 +83,7 @@ public class PathBatch
 }
 
 
-public class PricingResult : TableEntity
+public class PricingResultEntity : TableEntity
 {
     public double Spot { get; set; }
     public double Volatility { get; set; }
