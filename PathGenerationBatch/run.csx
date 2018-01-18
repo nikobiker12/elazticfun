@@ -22,8 +22,7 @@ using Newtonsoft.Json.Linq;
 
 public static async Task Run(SimulationRequest simulationRequest, TraceWriter log)
 {
-    log.Info("ServiceBus queue trigger function 'PathGenerationBatch'.");
-    log.Info($"Processing simulation : {simulationRequest.RequestId}, {simulationRequest.SimulationId} for {simulationRequest.SimulationCount} paths.");
+    log.Info($"Processing simulation : {simulationRequest.RequestId}, {simulationRequest.SimulationId} for {simulationRequest.BatchPatchsCount} / {simulationRequest.SimulationCount} paths.");
 
     var timesPoints = GenerateTimePoints(simulationRequest, log);
     var pathLists = Enumerable.Range(simulationRequest.BatchStartIndex, simulationRequest.BatchPatchsCount)
@@ -31,7 +30,7 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
 
     var pathBatch = new PathBatch { SimulationRequest = simulationRequest, Paths = pathLists.ToList(), Times = timesPoints };
 
-    Func<PathBatch, TraceWriter, Task<IEnumerable<double>>> payoffSumFunc;
+    Func<PathBatch, TraceWriter, Task<List<double>>> payoffSumFunc;
     switch (simulationRequest.PayoffName)
     {
         case "vanilla":
@@ -46,17 +45,17 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     PublishPricingResults(payoffsList, pathBatch, log);
 }
 
-public static Task<IEnumerable<double>> VanillaPayoff(PathBatch pathBatch, TraceWriter log)
+public static Task<List<double>> VanillaPayoff(PathBatch pathBatch, TraceWriter log)
 {
     return Task.FromResult(pathBatch.Paths.Select(path =>
     {
         var lastSpot = path.Spots[path.Spots.Count - 1];
         int direction = (int)pathBatch.SimulationRequest.OptionType;
         return Math.Max(direction * (lastSpot - pathBatch.SimulationRequest.Strike), 0);
-    }));
+    }).ToList());
 }
 
-public static async Task<IEnumerable<double>> CustomHttpPayOff(PathBatch pathBatch, TraceWriter log)
+public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, TraceWriter log)
 {
     dynamic json = new JObject();
     json.Paths = new JArray(pathBatch.Paths.Select(path => new JArray(path.Spots.ToArray())));
@@ -92,7 +91,7 @@ public static async Task<IEnumerable<double>> CustomHttpPayOff(PathBatch pathBat
                     string response = await responseReader.ReadToEndAsync();
                     log.Info($"JSON received from custom script = {response}");
                     JArray prices = JArray.Parse(response);
-                    return prices.Values<double>();
+                    return prices.Values<double>().ToList();
                 }
             }
         }
@@ -101,17 +100,19 @@ public static async Task<IEnumerable<double>> CustomHttpPayOff(PathBatch pathBat
     {
         log.Warning($"Cannot get response from patch batch id {pathBatch.SimulationRequest.SimulationId} : {e}");
     }
-    return Enumerable.Repeat(0.0, pathBatch.Paths.Count);
+    return Enumerable.Repeat(0.0, pathBatch.Paths.Count).ToList();
 }
 
-public static void PublishPricingResults(IEnumerable<double> payoffList, PathBatch pathBatch, TraceWriter log)
+public static void PublishPricingResults(List<double> payoffList, PathBatch pathBatch, TraceWriter log)
 {
     var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable(AZUREWEBJOBSSTORAGE_CONNECTIONSTRING_KEY));
     var tableClient = storage.CreateCloudTableClient();
     var table = tableClient.GetTableReference(PRICINGRESULTS_TABLE);
 
+    log.Info($"Processing simulation : {pathBatch.SimulationRequest.RequestId}, {pathBatch.SimulationRequest.SimulationId} for {pathBatch.SimulationRequest.BatchPatchsCount} / {pathBatch.SimulationRequest.SimulationCount} paths.");
+
     // https://azure.microsoft.com/en-us/blog/managing-concurrency-in-microsoft-azure-storage-2/
-    const int MaxRetries = 5;
+    const int MaxRetries = 200;
     for (int i = 0; i < MaxRetries; ++i)
     {
         try
