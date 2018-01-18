@@ -41,7 +41,7 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     foreach (var pathBatch in pathBatchLists)
     {
         var payoffsList = await payoffSumFunc(pathBatch);
-        PublishResult(payoffsList, pathBatch, log);
+        PublishPricingResults(payoffsList, pathBatch, log);
     }
 }
 
@@ -72,12 +72,11 @@ public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, i
         .Select(x => x.Select(v => v.Value));
 }
 
-public static void PublishResult(List<double> payoffList, PathBatch pathBatch, TraceWriter log)
+public static void PublishPricingResults(List<double> payoffList, PathBatch pathBatch, TraceWriter log)
 {
     var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
     var tableClient = storage.CreateCloudTableClient();
     var table = tableClient.GetTableReference(PRICING_RESULTS_TABLE);
-
 
     // https://azure.microsoft.com/en-us/blog/managing-concurrency-in-microsoft-azure-storage-2/
     const int MaxRetries = 5;
@@ -100,7 +99,7 @@ public static void PublishResult(List<double> payoffList, PathBatch pathBatch, T
         catch (StorageException ex)
         {
             if (ex.RequestInformation.HttpStatusCode == 412)
-                log.Warning("Optimistic concurrency violation – entity has changed since it was retrieved.");
+                log.Warning("Optimistic concurrency violation ï¿½ entity has changed since it was retrieved.");
             else
                 throw;
         }
