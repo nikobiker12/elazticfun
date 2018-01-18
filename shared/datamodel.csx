@@ -85,6 +85,8 @@ public class PathBatch
 
 public class PricingResult : TableEntity
 {
+    public double Spot { get; set; }
+    public double Volatility { get; set; }
     public double IndicatorSum { get; set; }
     public int PathsSum { get; set; }
     public int TotalPathsCount { get; set; }

@@ -64,6 +64,8 @@ public static void InitializePricingResults(List<SimulationRequest> simulationRe
     {
         PartitionKey = sr.RequestId,
         RowKey = sr.SimulationId.ToString(),
+        Spot = sr.Spot,
+        Volatility = sr.Volatility,
         IndicatorSum = 0.0,
         PathsSum = 0,
         TotalPathsCount = sr.SimulationCount

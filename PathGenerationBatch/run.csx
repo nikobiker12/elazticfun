@@ -136,7 +136,6 @@ public static void PublishResult(IEnumerable<double> payoffList, PathBatch pathB
             pricingResult.IndicatorSum += payoffList.Sum();
             pricingResult.PathsSum += payoffList.Count();
 
-
             TableOperation replaceOperation = TableOperation.Replace(pricingResult);
             TableResult replaceResult = table.Execute(replaceOperation);
 
