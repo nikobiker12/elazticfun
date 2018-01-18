@@ -1,15 +1,12 @@
 ﻿#load "..\shared\datamodel.csx"
 #load "..\shared\Constants.csx"
 
-#r "Newtonsoft.Json"
-
 using System.Net;
 using Microsoft.Azure; // Namespace for CloudConfigurationManager
 using Microsoft.WindowsAzure.Storage; // Namespace for CloudStorageAccount
 using Microsoft.WindowsAzure.Storage.Table; // Namespace for Table storage types
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 class PricingResult
 {
@@ -48,9 +45,5 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         RiskIndex = int.Parse(result.RowKey)
     });
 
-    dynamic json = new JArray(outputs.ToArray());
-    string jsonString = json.ToString(Newtonsoft.Json.Formatting.None);
-    log.Info($"JSON sent back to GUI = {jsonString}");
-
-    return req.CreateResponse(HttpStatusCode.OK, jsonString);
+    return req.CreateResponse(HttpStatusCode.OK, outputs.ToArray());
 }
