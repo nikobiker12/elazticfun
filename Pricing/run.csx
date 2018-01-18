@@ -10,6 +10,12 @@ public static async Task<HttpResponseMessage> Run(
     // Get request body
     dynamic data = await req.Content.ReadAsAsync<object>();
 
+    string optionType = data?.optionType;
+    if (String.IsNullOrEmpty(optionType))
+        return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError("Please pass optionType in the request body"));
+    if (!System.Enum.TryParse(optionType, out PricingParameters.EOptionType optionTypeE))
+        return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError($"optionType \"{optionType}\" is not valid. Must be Call or Put."));
+
     string payoffName = data?.payoffName;
     if (String.IsNullOrEmpty(payoffName))
         return req.CreateResponse(HttpStatusCode.BadRequest, new GetRequestError("Please pass payoffName in the request body"));
@@ -53,6 +59,7 @@ public static async Task<HttpResponseMessage> Run(
     PricingParameters pricingParameters = new PricingParameters
     {
         Id = Guid.NewGuid().ToString(),
+        OptionType = optionTypeE,
         PayoffName = payoffName,
         Strike = strike.GetValueOrDefault(),
         Maturity = maturity.GetValueOrDefault(),
