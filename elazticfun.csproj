@@ -15,6 +15,12 @@
     <None Update=".azurefunctions/swagger/swagger.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="GetPricingResults\function.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="GetPricingResults\run.csx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
      <None Update="host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
