@@ -1,10 +1,10 @@
 ﻿{
   "swagger": "2.0",
   "info": {
-    "title": "abbashacka2018.azurewebsites.net",
+    "title": "elazticfun.azurewebsites.net",
     "version": "1.0.0"
   },
-  "host": "abbashacka2018.azurewebsites.net",
+  "host": "elazticfun.azurewebsites.net",
   "basePath": "/",
   "schemes": [
     "https",
@@ -85,21 +85,31 @@
         ],
         "responses": {
           "200": {
-            "description": "The Guid of the request",
-            "x-ms-summary": "Message",
+            "description": "The result of the request",
+            "x-ms-summary": "The result of the request",
             "schema": {
-              "type": "string",
-              "description": "Returns the GUID of the request",
-              "x-ms-summary": "Message"
+              "type": "object",
+              "properties": {
+                "RequestId": {
+                  "type": "string",
+                  "description": "The GUID of the request",
+                  "x-ms-summary": "The GUID of the request"
+                }
+              }
             }
           },
           "400": {
-            "description": "The error Message",
-            "x-ms-summary": "Message",
+            "description": "The error of the request",
+            "x-ms-summary": "The error of the request",
             "schema": {
-              "type": "string",
-              "description": "The error message",
-              "x-ms-summary": "Message"
+              "type": "object",
+              "properties": {
+                "Error": {
+                  "type": "string",
+                  "description": "The error message of the request",
+                  "x-ms-summary": "The error message of the request"
+                }
+              }
             }
           }
         },
