@@ -65,7 +65,7 @@ public static async Task<IEnumerable<double>> CustomHttpPayOff(PathBatch pathBat
 {
     dynamic json = new JObject();
     json.Paths = new JArray(pathBatch.Paths.Select(path => new JArray(path.Spots.ToArray())));
-    json.Direction = (int)pathBatch.SimulationRequest.OptionType;
+    json.OptionType = (int)pathBatch.SimulationRequest.OptionType;
     json.Strike = pathBatch.SimulationRequest.Strike;
     json.PayoffName = pathBatch.SimulationRequest.PayoffName;
     string jsonString = json.ToString(Newtonsoft.Json.Formatting.None);
