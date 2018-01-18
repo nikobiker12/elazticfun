@@ -103,7 +103,7 @@ public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, Tra
     return Enumerable.Repeat(0.0, pathBatch.Paths.Count).ToList();
 }
 
-public static void PublishPricingResults(List<double> payoffList, PathBatch pathBatch, TraceWriter log)
+public static async Task PublishPricingResults(List<double> payoffList, PathBatch pathBatch, TraceWriter log)
 {
     var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable(AZUREWEBJOBSSTORAGE_CONNECTIONSTRING_KEY));
     var tableClient = storage.CreateCloudTableClient();
@@ -118,13 +118,13 @@ public static void PublishPricingResults(List<double> payoffList, PathBatch path
         try
         {
             TableOperation retrieveOperation = TableOperation.Retrieve<PricingResultEntity>(pathBatch.SimulationRequest.RequestId, pathBatch.SimulationRequest.SimulationId.ToString());
-            TableResult retrievedResult = table.Execute(retrieveOperation);
+            TableResult retrievedResult = await table.ExecuteAsync(retrieveOperation);
             PricingResultEntity pricingResult = (PricingResultEntity) retrievedResult.Result;
             pricingResult.IndicatorSum += sum;
             pricingResult.PathsSum += count;
 
             TableOperation replaceOperation = TableOperation.Replace(pricingResult);
-            TableResult replaceResult = table.Execute(replaceOperation);
+            TableResult replaceResult = await table.ExecuteAsync(replaceOperation);
 
             break;
         }
