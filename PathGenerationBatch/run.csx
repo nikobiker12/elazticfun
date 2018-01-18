@@ -1,7 +1,7 @@
 #load "..\shared\Constants.csx"
 #load "..\shared\datamodel.csx"
 #load "..\shared\PathGenerationUtils.csx"
-#load "..\shared\QueueClientExtensions.csx"
+#load "..\shared\CollectionsExtensions.csx"
 
 #r "Microsoft.WindowsAzure.Storage"
 #r "Newtonsoft.Json"
@@ -103,19 +103,6 @@ public static async Task<IEnumerable<double>> CustomHttpPayOff(PathBatch pathBat
         log.Warning($"Cannot get response from patch batch id {pathBatch.SimulationRequest.SimulationId} : {e}");
     }
     return Enumerable.Repeat(0.0, pathBatch.Paths.Count);
-}
-
-public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, int batchSize)
-{
-    if (source == null)
-        return new List<List<T>>();
-    if (source.Count() < batchSize)
-        return new List<List<T>> { new List<T>(source) };
-
-    return source
-        .Select((x, i) => new { Index = i, Value = x })
-        .GroupBy(x => x.Index / batchSize)
-        .Select(x => x.Select(v => v.Value));
 }
 
 public static void PublishPricingResults(IEnumerable<double> payoffList, PathBatch pathBatch, TraceWriter log)
