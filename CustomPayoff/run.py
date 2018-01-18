@@ -9,7 +9,7 @@ def customPayoffPrice(payoffName, postreqdata):
 	elif(payoffName == "asian-geometric"):
 		return geometricAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])
 	elif(payoffName == "oneTouch"):
-		return geometricAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])
+		return oneTouch(postreqdata['strike'], postreqdata['paths'])
 	else:
 		print("{} is not supported, please create our function".format(payoffName))
 		return [0.0] * len(postreqdata['paths'])
