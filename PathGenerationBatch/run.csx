@@ -109,8 +109,8 @@ public static void PublishPricingResults(List<double> payoffList, PathBatch path
     var tableClient = storage.CreateCloudTableClient();
     var table = tableClient.GetTableReference(PRICINGRESULTS_TABLE);
 
-    log.Info($"Processing simulation : {pathBatch.SimulationRequest.RequestId}, {pathBatch.SimulationRequest.SimulationId} for {pathBatch.SimulationRequest.BatchPatchsCount} / {pathBatch.SimulationRequest.SimulationCount} paths.");
-
+    double sum =  payoffList.Sum();
+    int count =  payoffList.Count();
     // https://azure.microsoft.com/en-us/blog/managing-concurrency-in-microsoft-azure-storage-2/
     const int MaxRetries = 200;
     for (int i = 0; i < MaxRetries; ++i)
@@ -120,8 +120,8 @@ public static void PublishPricingResults(List<double> payoffList, PathBatch path
             TableOperation retrieveOperation = TableOperation.Retrieve<PricingResultEntity>(pathBatch.SimulationRequest.RequestId, pathBatch.SimulationRequest.SimulationId.ToString());
             TableResult retrievedResult = table.Execute(retrieveOperation);
             PricingResultEntity pricingResult = (PricingResultEntity) retrievedResult.Result;
-            pricingResult.IndicatorSum += payoffList.Sum();
-            pricingResult.PathsSum += payoffList.Count();
+            pricingResult.IndicatorSum += sum;
+            pricingResult.PathsSum += count;
 
             TableOperation replaceOperation = TableOperation.Replace(pricingResult);
             TableResult replaceResult = table.Execute(replaceOperation);
