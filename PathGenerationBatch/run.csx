@@ -25,7 +25,7 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     log.Info("ServiceBus queue trigger function 'PathGenerationBatch'.");
     log.Info($"Processing simulation : {simulationRequest.RequestId}, {simulationRequest.SimulationId} for {simulationRequest.SimulationCount} paths.");
 
-    int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable("SimulationBatchSize"));
+    int batchSize = Convert.ToInt32(Environment.GetEnvironmentVariable(SIMULATIONBATCHSIZE_KEY));
 
     var timesPoints = GenerateTimePoints(simulationRequest, log);
     var pathBatchLists = Enumerable.Range(0, simulationRequest.SimulationCount)
@@ -100,7 +100,7 @@ public static async Task<IEnumerable<double>> CustomHttpPayOff(PathBatch pathBat
     }
     catch (Exception e)
     {
-        log.Info($"Cannot get response from patch batch id {pathBatch.SimulationRequest.SimulationId} : {e}");
+        log.Warning($"Cannot get response from patch batch id {pathBatch.SimulationRequest.SimulationId} : {e}");
     }
     return Enumerable.Repeat(0.0, pathBatch.Paths.Count);
 }
@@ -120,10 +120,9 @@ public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, i
 
 public static void PublishResult(IEnumerable<double> payoffList, PathBatch pathBatch, TraceWriter log)
 {
-    var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
+    var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable(AZUREWEBJOBSSTORAGE_CONNECTIONSTRING_KEY));
     var tableClient = storage.CreateCloudTableClient();
-    var table = tableClient.GetTableReference(PRICING_RESULTS_TABLE);
-
+    var table = tableClient.GetTableReference(PRICINGRESULTS_TABLE);
 
     // https://azure.microsoft.com/en-us/blog/managing-concurrency-in-microsoft-azure-storage-2/
     const int MaxRetries = 5;
@@ -146,7 +145,7 @@ public static void PublishResult(IEnumerable<double> payoffList, PathBatch pathB
         catch (StorageException ex)
         {
             if (ex.RequestInformation.HttpStatusCode == 412)
-                log.Warning("Optimistic concurrency violation – entity has changed since it was retrieved.");
+                log.Warning("Optimistic concurrency violation ! Entity has changed since it was retrieved.");
             else
                 throw;
         }
