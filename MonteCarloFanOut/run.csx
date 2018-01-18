@@ -61,7 +61,7 @@ public static void InitializePricingResults(List<SimulationRequest> simulationRe
 
     table.CreateIfNotExists();
 
-    var batchOp = simulationRequestsList.Select(sr => new PricingResult
+    var batchOp = simulationRequestsList.Select(sr => new PricingResultEntity
     {
         PartitionKey = sr.RequestId,
         RowKey = sr.SimulationId.ToString(),
