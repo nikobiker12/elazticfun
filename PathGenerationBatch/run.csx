@@ -42,7 +42,7 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     }
 
     var payoffsList = await payoffSumFunc(pathBatch, log);
-    PublishPricingResults(payoffsList, pathBatch, log);
+    await PublishPricingResults(payoffsList, pathBatch, log);
 }
 
 public static Task<List<double>> VanillaPayoff(PathBatch pathBatch, TraceWriter log)
