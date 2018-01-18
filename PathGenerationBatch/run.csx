@@ -42,7 +42,7 @@ public static async Task Run(SimulationRequest simulationRequest, TraceWriter lo
     }
 
     var payoffsList = await payoffSumFunc(pathBatch, log);
-    PublishPricingResults(payoffsList, pathBatch, log);
+    await PublishPricingResults(payoffsList, pathBatch, log);
 }
 
 public static Task<List<double>> VanillaPayoff(PathBatch pathBatch, TraceWriter log)
@@ -58,10 +58,10 @@ public static Task<List<double>> VanillaPayoff(PathBatch pathBatch, TraceWriter 
 public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, TraceWriter log)
 {
     dynamic json = new JObject();
-    json.Paths = new JArray(pathBatch.Paths.Select(path => new JArray(path.Spots.ToArray())));
-    json.OptionType = (int)pathBatch.SimulationRequest.OptionType;
-    json.Strike = pathBatch.SimulationRequest.Strike;
-    json.PayoffName = pathBatch.SimulationRequest.PayoffName;
+    json.paths = new JArray(pathBatch.Paths.Select(path => new JArray(path.Spots.ToArray())));
+    json.optionType = (int)pathBatch.SimulationRequest.OptionType;
+    json.strike = pathBatch.SimulationRequest.Strike;
+    json.payoffName = pathBatch.SimulationRequest.PayoffName;
     string jsonString = json.ToString(Newtonsoft.Json.Formatting.None);
     log.Info($"JSON sent to custom script = {jsonString}");
 
@@ -74,7 +74,7 @@ public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, Tra
     request.ContentType = "application/json";
     request.ContentLength = jsonString.Length;
     using (Stream webStream = await request.GetRequestStreamAsync())
-    using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.UTF8))
+    using (StreamWriter requestWriter = new StreamWriter(webStream, System.Text.Encoding.ASCII))
     {
         await requestWriter.WriteAsync(jsonString);
     }
@@ -103,7 +103,7 @@ public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, Tra
     return Enumerable.Repeat(0.0, pathBatch.Paths.Count).ToList();
 }
 
-public static void PublishPricingResults(List<double> payoffList, PathBatch pathBatch, TraceWriter log)
+public static async Task PublishPricingResults(List<double> payoffList, PathBatch pathBatch, TraceWriter log)
 {
     var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable(AZUREWEBJOBSSTORAGE_CONNECTIONSTRING_KEY));
     var tableClient = storage.CreateCloudTableClient();
@@ -118,13 +118,13 @@ public static void PublishPricingResults(List<double> payoffList, PathBatch path
         try
         {
             TableOperation retrieveOperation = TableOperation.Retrieve<PricingResultEntity>(pathBatch.SimulationRequest.RequestId, pathBatch.SimulationRequest.SimulationId.ToString());
-            TableResult retrievedResult = table.Execute(retrieveOperation);
+            TableResult retrievedResult = await table.ExecuteAsync(retrieveOperation);
             PricingResultEntity pricingResult = (PricingResultEntity) retrievedResult.Result;
             pricingResult.IndicatorSum += sum;
             pricingResult.PathsSum += count;
 
             TableOperation replaceOperation = TableOperation.Replace(pricingResult);
-            TableResult replaceResult = table.Execute(replaceOperation);
+            TableResult replaceResult = await table.ExecuteAsync(replaceOperation);
 
             break;
         }
