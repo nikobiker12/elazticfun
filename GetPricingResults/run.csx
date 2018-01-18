@@ -11,10 +11,11 @@ using System.Linq;
 class PricingResult
 {
     public double Price;
-    public int ProgressInPercent;
+    public double Progress;
+    public int ProcessedPathCount;
+    public int TotalPathCount;
     public double Spot;
     public double Volatility;
-    public int RiskIndex;
 }
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
@@ -39,10 +40,11 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     var outputs = queryResult.Select(result => new PricingResult
     {
         Price = result.PathsSum == 0.0 ? 0.0 : result.IndicatorSum / result.PathsSum,
-        ProgressInPercent = 100 * result.PathsSum / result.TotalPathsCount,
+        Progress = result.PathsSum / result.TotalPathsCount,
+        ProcessedPathCount = result.PathsSum,
+        TotalPathCount = result.TotalPathsCount,
         Spot = result.Spot,
-        Volatility = result.Volatility,
-        RiskIndex = int.Parse(result.RowKey)
+        Volatility = result.Volatility
     });
 
     return req.CreateResponse(HttpStatusCode.OK, outputs.ToArray());
