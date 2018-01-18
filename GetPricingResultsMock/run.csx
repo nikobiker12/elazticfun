@@ -19,7 +19,7 @@ class PricingResult
     public double Volatility;
 }
 
-private static void GetRandomResults(string pricingRequestId)
+private static PricingResult[] GetRandomResults(string pricingRequestId)
 {
     Random random = new Random();
     var progress = random.NextDouble();
@@ -38,6 +38,8 @@ private static void GetRandomResults(string pricingRequestId)
             Volatility = volatility + (0.12 * i),
         }
     ).ToArray();
+
+    return results;
 }
 
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
@@ -52,11 +54,9 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     if (pricingRequestId == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a pricingRequestId in a GET request");
     
-    var results = GetRandomResults(pricingRequestId)
+    var results = GetRandomResults(pricingRequestId);
 
-    dynamic json = new JArray(results.ToArray());
-    string jsonString = json.ToString(Newtonsoft.Json.Formatting.None);
-    log.Info($"JSON sent dummy results = {jsonString}");
+    log.Info($"Sending mock results response.");
 
-    return req.CreateResponse(HttpStatusCode.OK, jsonString);
+    return req.CreateResponse(HttpStatusCode.OK, results);
 }
