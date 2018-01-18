@@ -1,6 +1,7 @@
 #load "..\shared\Constants.csx"
 #load "..\shared\datamodel.csx"
 #load "..\shared\QueueClientExtensions.csx"
+#load "..\shared\CollectionsExtensions.csx"
 
 #r "Microsoft.ServiceBus"
 #r "Microsoft.WindowsAzure.Storage"
@@ -23,7 +24,7 @@ public static async Task Run(PricingParameters pricingRequest, TraceWriter log)
 
     var simulationRequestsList = GenrerateSimulationRequests(pricingRequest, log);
 
-    InitializePricingResults(simulationRequestsList);
+    await InitializePricingResults(simulationRequestsList);
 
     var splittedSimulationRequestsList = SplitSimulationRequestsList(simulationRequestsList, pricingRequest);
 
@@ -55,15 +56,15 @@ public static List<SimulationRequest> GenrerateSimulationRequests(PricingParamet
         .ToList();
 }
 
-public static void InitializePricingResults(List<SimulationRequest> simulationRequestsList)
+public static async Task InitializePricingResults(List<SimulationRequest> simulationRequestsList)
 {
     var storage = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable(AZUREWEBJOBSSTORAGE_CONNECTIONSTRING_KEY));
     var tableClient = storage.CreateCloudTableClient();
     var table = tableClient.GetTableReference(PRICINGRESULTS_TABLE);
 
-    table.CreateIfNotExists();
+    await table.CreateIfNotExistsAsync();
 
-    var batchOp = simulationRequestsList.Select(sr => new PricingResultEntity
+    var batchLists = simulationRequestsList.Select(sr => new PricingResultEntity
     {
         PartitionKey = sr.RequestId,
         RowKey = sr.SimulationId.ToString(),
@@ -73,9 +74,12 @@ public static void InitializePricingResults(List<SimulationRequest> simulationRe
         PathsSum = 0,
         TotalPathsCount = sr.SimulationCount
     })
-    .Aggregate(new TableBatchOperation(), (batchOpAgg, pr) => { batchOpAgg.Add(TableOperation.Insert(pr)); return batchOpAgg; });
-
-    var result = table.ExecuteBatch(batchOp);
+    .Chunk(100);
+    foreach (var batchList in batchLists)
+    {
+        var batchOp = batchList.Aggregate(new TableBatchOperation(), (batchOpAgg, pr) => { batchOpAgg.Add(TableOperation.Insert(pr)); return batchOpAgg; });
+        await table.ExecuteBatchAsync(batchOp);
+    }
 }
 
 public static IEnumerable<SimulationRequest> SplitSimulationRequestsList(IEnumerable<SimulationRequest> simulationRequestsList, PricingParameters pricingRequest)
