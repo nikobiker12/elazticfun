@@ -12,7 +12,6 @@ def customPayoffPrice(payoffName, postreqdata):
 		return oneTouch(postreqdata['strike'], postreqdata['paths'])
 	else:
 		print("Payoff {} is not supported, prices will be 0".format(payoffName))
-        print("This is a demo log")
 		return [0.0] * len(postreqdata['paths'])
 
 
