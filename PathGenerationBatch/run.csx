@@ -63,7 +63,7 @@ public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, Tra
     json.strike = pathBatch.SimulationRequest.Strike;
     json.payoffName = pathBatch.SimulationRequest.PayoffName;
     string jsonString = json.ToString(Newtonsoft.Json.Formatting.None);
-    log.Info($"JSON sent to custom script = {jsonString}");
+    log.Info($"JSON sent to custom script");
 
     string url = System.Environment.GetEnvironmentVariable($"PAYOFFMETHODURI_{pathBatch.SimulationRequest.PayoffName}");
     if (String.IsNullOrEmpty(url))
@@ -89,7 +89,7 @@ public static async Task<List<double>> CustomHttpPayOff(PathBatch pathBatch, Tra
                 using (StreamReader responseReader = new StreamReader(webStream))
                 {
                     string response = await responseReader.ReadToEndAsync();
-                    log.Info($"JSON received from custom script = {response}");
+                    log.Info($"JSON received from custom script");
                     JArray prices = JArray.Parse(response);
                     return prices.Values<double>().ToList();
                 }
