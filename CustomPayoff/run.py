@@ -11,7 +11,7 @@ def customPayoffPrice(payoffName, postreqdata):
 	elif(payoffName == "oneTouch"):
 		return oneTouch(postreqdata['strike'], postreqdata['paths'])
 	else:
-		print("Payoff {} is not supported".format(payoffName))
+		print("Payoff {} is not supported, prices will be 0".format(payoffName))
 		return [0.0] * len(postreqdata['paths'])
 
 
