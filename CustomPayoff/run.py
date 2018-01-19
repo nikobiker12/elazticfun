@@ -4,7 +4,7 @@ import math
 
 
 def customPayoffPrice(payoffName, postreqdata):
-	if(payoffName == "asian-average"):
+	if(payoffName == "asian-arithmetic"):
 		return arithmeticAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])
 	elif(payoffName == "asian-geometric"):
 		return geometricAverage(postreqdata['strike'], postreqdata['paths'], postreqdata['optionType'])
