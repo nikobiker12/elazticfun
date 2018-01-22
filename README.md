@@ -1,6 +1,6 @@
 # ElazticFun
 
-![GitHub Logo](/images/logo.png)
+![GitHub Logo](/images/Logo.png)
 
 Finastra Hackaton 2018
 
