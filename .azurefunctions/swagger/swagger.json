@@ -11,13 +11,11 @@
     "http"
   ],
   "paths": {
-    "/api/Pricing": {
+    "/api/pricing": {
       "post": {
-        "operationId": "Pricing",
-        "description": "Determines the payoff of an option",
+        "operationId": "pricing",
+        "description": "Determines the pricing of an option",
         "summary": "Calculates pricing",
-        "x-ms-summary": "Calculates costs",
-        "x-ms-visibility": "important",
         "produces": [
           "application/json"
         ],
@@ -28,57 +26,244 @@
           {
             "name": "body",
             "in": "body",
-            "description": "option's informations",
-            "x-ms-summary": "option's informations",
-            "x-ms-visibility": "important",
+            "description": "The pricing parameters",
             "required": true,
             "schema": {
               "type": "object",
               "properties": {
+                "optionType": {
+                  "description": "The option type (Call or Put)",
+                  "type": "string"
+                },
                 "payoffName": {
                   "description": "The payoff Name",
-                  "type": "string",
-                  "x-ms-summary": "Payoff name",
-                  "x-ms-visibility": "important"
+                  "type": "string"
                 },
                 "strike": {
                   "description": "The strike",
-                  "type": "integer",
-                  "x-ms-summary": "strike",
-                  "x-ms-visibility": "important"
+                  "type": "number",
+                  "format": "double"
                 },
                 "maturity": {
                   "description": "The maturity",
-                  "type": "integer",
-                  "x-ms-summary": "maturity",
-                  "x-ms-visibility": "important"
+                  "type": "number",
+                  "format": "double"
                 },
                 "spot": {
                   "description": "The spot",
-                  "type": "integer",
-                  "x-ms-summary": "spot",
-                  "x-ms-visibility": "important"
+                  "type": "number",
+                  "format": "double"
                 },
                 "volatility": {
                   "description": "The volatility",
-                  "type": "integer",
-                  "x-ms-summary": "volatility",
-                  "x-ms-visibility": "important"
+                  "type": "number",
+                  "format": "double"
                 },
                 "simulationCount": {
                   "description": "The simulation count",
                   "type": "integer",
-                  "x-ms-summary": "simulationCount",
-                  "x-ms-visibility": "important"
+                  "format": "int64"
+                },
+                "spotBumpCount": {
+                  "description": "The spot step count",
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "volBumpCount": {
+                  "description": "The vol step count",
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "spotBumpSize": {
+                  "description": "The spot step size",
+                  "type": "number",
+                  "format": "double"
+                },
+                "volBumpSize": {
+                  "description": "The vol step size",
+                  "type": "number",
+                  "format": "double"
                 }
               },
               "required": [
+                "optionType",
                 "payoffName",
                 "strike",
                 "maturity",
                 "spot",
                 "volatility",
-                "simulationCount"
+                "simulationCount",
+                "spotBumpCount",
+                "volBumpCount",
+                "spotBumpSize",
+                "volBumpSize"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The identifier of the request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "RequestId": {
+                  "type": "string",
+                  "description": "The GUID of the request"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The error reason",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "Error": {
+                  "type": "string",
+                  "description": "The error reason"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyQuery": []
+          }
+        ]
+      }
+    },
+    "/api/pricing/{pricingRequestId}": {
+      "get": {
+        "operationId": "pricingresults",
+        "description": "Get pricing results for a given request",
+        "summary": "Get pricing results",
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "pricingRequestId",
+            "in": "path",
+            "description": "The pricing request Identifier",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The result of the request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "Price": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "The price"
+                },
+                "Progress": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "The progress"
+                },
+                "Spot": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "The spot"
+                },
+                "Volatility": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "The Volatility"
+                },
+                "ProcessedPathCount": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "The ProcessedPathCount"
+                },
+                "TotalPathCount": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "The TotalPathCount"
+                },
+                "RequestId": {
+                  "type": "string",
+                  "description": "The request id"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The error of the request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "Error": {
+                  "type": "string",
+                  "description": "The error message of the request"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apikeyQuery": []
+          }
+        ]
+      }
+    },
+    "/api/custompayoff": {
+      "post": {
+        "operationId": "custompayoff",
+        "description": "Determines the payoff",
+        "summary": "Calculates payoff",
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The payoff parameters",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "optionType": {
+                  "description": "The option type (Call or Put)",
+                  "type": "string"
+                },
+                "payoffName": {
+                  "description": "The payoff Name",
+                  "type": "string"
+                },
+                "strike": {
+                  "description": "The strike",
+                  "type": "number",
+                  "format": "double"
+                },
+                "paths": {
+                  "description": "The vol step size",
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "format": "double"
+                  }
+                }
+              },
+              "required": [
+                "optionType",
+                "payoffName",
+                "strike",
+                "paths"
               ]
             }
           }
@@ -86,28 +271,22 @@
         "responses": {
           "200": {
             "description": "The result of the request",
-            "x-ms-summary": "The result of the request",
             "schema": {
-              "type": "object",
-              "properties": {
-                "RequestId": {
-                  "type": "string",
-                  "description": "The GUID of the request",
-                  "x-ms-summary": "The GUID of the request"
-                }
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double"
               }
             }
           },
           "400": {
-            "description": "The error of the request",
-            "x-ms-summary": "The error of the request",
+            "description": "The error reason",
             "schema": {
               "type": "object",
               "properties": {
                 "Error": {
                   "type": "string",
-                  "description": "The error message of the request",
-                  "x-ms-summary": "The error message of the request"
+                  "description": "The error reason"
                 }
               }
             }
